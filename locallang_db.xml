@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<T3locallang>
+	<meta type="array">
+		<type>database</type>
+		<description>Language labels for database tables/fields belonging to extension 'cfa_mooflow'</description>
+	</meta>
+	<data type="array">
+		<languageKey index="default" type="array">
+			<label index="cfa_mooflow_images">MooFlow_Images</label>
+			<label index="cfa_mooflow_images.images">images</label>
+			<label index="tt_content.list_type_pi1">MooFlow integration</label>
+			
+			<label index="cfa_mooflow.pi_flexform.sheet_sPage1">Select images</label>
+			<label index="cfa_mooflow.pi_flexform.sheet_sPage2">Configuration</label>
+			<label index="cfa_mooflow.pi_flexform.images">Images:</label>
+			<label index="cfa_mooflow.pi_flexform.params">Parameter:</label>
+			<label index="cfa_mooflow.pi_flexform.linkMethod">Doubleclick behavior</label>
+			<label index="cfa_mooflow.pi_flexform.reflection">Reflection:</label>
+                        <label index="cfa_mooflow.pi_flexform.heightRatio">heightRatio:</label>
+                        <label index="cfa_mooflow.pi_flexform.offsetY">offsetY:</label>
+                        <label index="cfa_mooflow.pi_flexform.startIndex">startIndex:</label>
+                        <label index="cfa_mooflow.pi_flexform.interval">interval:</label>
+                        <label index="cfa_mooflow.pi_flexform.factor">factor:</label>
+                        <label index="cfa_mooflow.pi_flexform.bgColor">bgColor:</label>
+                        <label index="cfa_mooflow.pi_flexform.useCaption">useCaption:</label>
+                        <label index="cfa_mooflow.pi_flexform.useResize">useResize:</label>
+                        <label index="cfa_mooflow.pi_flexform.useSlider">useSlider:</label>
+                        <label index="cfa_mooflow.pi_flexform.useWindowResize">useWindowResize:</label>
+                        <label index="cfa_mooflow.pi_flexform.useMouseWheel">useMouseWheel:</label>
+                        <label index="cfa_mooflow.pi_flexform.useKeyInput">useKeyInput:</label>
+                        <label index="cfa_mooflow.pi_flexform.useViewer">useViewer:</label>
+                        <label index="cfa_mooflow.pi_flexform.useAutoPlay">useAutoPlay:</label>
+		</languageKey>
+		<languageKey index="de" type="array">
+			<label index="cfa_mooflow_images">MooFlow_Bilder</label>
+			<label index="cfa_mooflow_images.images">Bilder</label>
+			<label index="tt_content.list_type_pi1">MooFlow Integration</label>
+
+			<label index="cfa_mooflow.pi_flexform.sheet_sPage1">Bildauswahl</label>
+			<label index="cfa_mooflow.pi_flexform.sheet_sPage2">Konfiguration</label>
+			<label index="cfa_mooflow.pi_flexform.images">Bilder:</label>
+			<label index="cfa_mooflow.pi_flexform.params">Parameter:</label>
+			<label index="cfa_mooflow.pi_flexform.linkMethod">Doppelklick Verhalten:</label>
+			<label index="cfa_mooflow.pi_flexform.reflection">Reflection:</label>
+                        <label index="cfa_mooflow.pi_flexform.heightRatio">heightRatio:</label>
+                        <label index="cfa_mooflow.pi_flexform.offsetY">offsetY:</label>
+                        <label index="cfa_mooflow.pi_flexform.startIndex">startIndex:</label>
+                        <label index="cfa_mooflow.pi_flexform.interval">interval:</label>
+                        <label index="cfa_mooflow.pi_flexform.factor">factor:</label>
+                        <label index="cfa_mooflow.pi_flexform.bgColor">bgColor:</label>
+                        <label index="cfa_mooflow.pi_flexform.useCaption">useCaption:</label>
+                        <label index="cfa_mooflow.pi_flexform.useResize">useResize:</label>
+                        <label index="cfa_mooflow.pi_flexform.useSlider">useSlider:</label>
+                        <label index="cfa_mooflow.pi_flexform.useWindowResize">useWindowResize:</label>
+                        <label index="cfa_mooflow.pi_flexform.useMouseWheel">useMouseWheel:</label>
+                        <label index="cfa_mooflow.pi_flexform.useKeyInput">useKeyInput:</label>
+                        <label index="cfa_mooflow.pi_flexform.useViewer">useViewer:</label>
+                        <label index="cfa_mooflow.pi_flexform.useAutoPlay">useAutoPlay:</label>                                                
+		</languageKey>
+	</data>
+</T3locallang>
