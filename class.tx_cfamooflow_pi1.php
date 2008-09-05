@@ -227,10 +227,12 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                 */
                 if ($this->conf['mode']=='MANUAL') {       
 		  $imgs = $this->getManualImages($attrHash,$hashnum);
-                }
-                if ($this->conf['mode']=='DAM') {
+                } elseif ($this->conf['mode']=='DAM') {
                    $imgs = $this->getDamImages();
+                } elseif ($this->conf['mode']=='DAMCAT') {
+                   $imgs = $this->getDamCatImages();
                 }
+                
                                             
                 $html .= $imgs.'</div>';
                 
@@ -255,10 +257,18 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                 // Image Parameter
 		$ffparams = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'params','sPage1');
 		if(!empty($ffparams)) $this->conf['params'] = $ffparams;
-
+                
+                // Mode selection
                 $ffmode = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'mode','sPage1');
 		if(!empty($ffmode)) $this->conf['mode'] = $ffmode;
-                                                                
+		
+		// Get DamCat
+		$ffmodedamcat = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'modedamcat','sPage1');
+		if(!empty($ffmodedamcat)) $this->conf['modedamcat'] = $ffmodedamcat;
+		
+		$ffrecursivedamcat = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'recursivedamcat','sPage1');
+		if(!empty($ffrecursivedamcat)) $this->conf['recursivedamcat'] = $ffrecursivedamcat;
+
                 //Reflection
 		$ffreflection = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'reflection','sPage2');
 		if(!empty($ffreflection)) $this->conf['reflection'] = $ffreflection;
@@ -373,7 +383,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
               // if i find a localized record i overwrite the default language $key with the localized language $key
               if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
                 $key = $row['uid'];
-                    }
+              }
               $GLOBALS['TYPO3_DB']->sql_free_result($res);
               
               $temp_where='uid = '.$key;
@@ -389,7 +399,66 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
               
             } 
             return($imgs);
-        }   
+        } 
+          
+        function getDamCatImages() {
+              // $content.=$this->beginGallery($this->config['id'],$limitImages);
+                
+                // add image
+          $list= str_replace('tx_dam_cat_', '',$this->conf['modedamcat']);
+      
+          $listRecursive = $this->getDamCatRecursive($list,$this->conf['recursivedamcat']);
+          $listArray = explode(',',$listRecursive);
+          $files = Array();
+            foreach($listArray as $cat) {				
+              // add images from categories
+              $fields = 'tx_dam.uid,tx_dam.title,tx_dam.description,tx_dam.file_name,tx_dam.file_path';
+              $tables = 'tx_dam,tx_dam_mm_cat';
+              $temp_where = 'tx_dam.deleted = 0 AND tx_dam.file_mime_type=\'image\' AND tx_dam.hidden=0 AND tx_dam_mm_cat.uid_foreign='.$cat.' AND tx_dam_mm_cat.uid_local=tx_dam.uid';
+              $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $tables, $temp_where);
+                    
+              while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)){
+                $files[$row['uid']] = $row; # just add the image to an array
+              }
+            }
+                      
+          
+          
+            // add the image for real
+          foreach ($files as $key=>$row) {
+            $path =  $row['file_path'].$row['file_name'];
+            
+            $imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
+            $imgs .= '<img src="'.$path.'" alt="'.$row['description'].'" title="'.$row['title'].'" />';
+            $imgs .= '</a>';
+          }			
+          return($imgs);
+        }
+      
+        function getDamCatRecursive($id,$level=0) {
+          $result = $id.','; # add id of 1st level 
+          $idList = explode(',',$id);
+          
+          if ($level > 0) {
+            $level--;
+            
+            foreach ($idList as $key=>$value) {
+              $where = 'hidden=0 AND deleted=0 AND parent_id='.$id;
+              $res= $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_dam_cat', $where);
+              while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)){	
+                $all[$row['uid']]=$row['uid'];
+                $rec = $this->getDamCatRecursive($row['uid'],$level);
+                if ($rec!='')  {
+                  $result.=$rec.',';
+                }
+              }
+            } # end for each
+          } # end if level
+              
+          $result = str_replace(',,',',',$result);
+          $result = substr($result,0,-1);
+          return $result;
+        }        
 }
 
 
