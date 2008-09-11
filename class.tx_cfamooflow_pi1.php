@@ -216,17 +216,11 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                 $html = '
                         <div id="MooFlow" class="mf">';
                 
-                /*
-                if ($this->conf['mode']=='DAM') {
-  			//$content.=$this->getImagesDam($limitImages);
-                        print_r("Hit");
-                        $this->getDamImages();
-                } else {
-                	print_r($this->conf['mode']);                
-                } 
-                */
+               
                 if ($this->conf['mode']=='MANUAL') {       
 		  $imgs = $this->getManualImages($attrHash,$hashnum);
+		} elseif ($this->conf['mode'] == 'DIRECTORY') {
+		  $imgs = $this->getDirectoryImages();
                 } elseif ($this->conf['mode']=='DAM') {
                    $imgs = $this->getDamImages();
                 } elseif ($this->conf['mode']=='DAMCAT') {
@@ -251,9 +245,19 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 		$this->pi_initPIflexForm();
                 
                 // Images
-		$ffimages = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'images','sPage1');
+		$ffimages = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'defaultmode','sPage1');
 		if(!empty($ffimages)) $this->conf['images'] = $ffimages;
-                
+    
+    // Directory
+    $ffdirectory = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'directorymode','sPage1');
+		if(!empty($ffdirectory)) $this->conf['directory'] = $ffdirectory;                
+    
+    $ffdModeImageTitle = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'dModeImageTitle','sPage1');
+		if(!empty($ffdModeImageTitle)) $this->conf['dModeImageTitle'] = $ffdModeImageTitle;
+		
+		$ffdModeImageAlt = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'dModeImageAlt','sPage1');
+		if(!empty($ffdModeImageAlt)) $this->conf['dModeImageAlt'] = $ffdModeImageAlt;
+		
                 // Image Parameter
 		$ffparams = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'params','sPage1');
 		if(!empty($ffparams)) $this->conf['params'] = $ffparams;
@@ -347,6 +351,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
         function getManualImages($attrHash,$hashnum) {
             $images = explode(",",$this->conf['images']);
             foreach($images as $image) {
+            /*
                     if(!empty($attrHash[$hashnum]['href']) && !empty($attrHash[$hashnum]['rel']) && !empty($attrHash[$hashnum]['target'])) {
                       $imgs .= '<a href="'.$attrHash[$hashnum]['href'].'" rel="'.$attrHash[$hashnum]['rel'].'" target="'.$attrHash[$hashnum]['target'].'">';
                       $imgs .= '<img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="'.$attrHash[$hashnum]['longdesc'].'" title="'.$attrHash[$hashnum]['title'].'" />';
@@ -354,12 +359,102 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                     } else {
                       $imgs .= '<div><img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="'.$attrHash[$hashnum]['longdesc'].'" title="'.$attrHash[$hashnum]['title'].'" /></div>';
                     }
+            */
+                    if($this->linkMethod == "remooz") {
+                    	if($attrHash[0]) {
+                    		/* If there an override for all picture, use only this */
+                    		$hashnum = 0;
+                    	}
+                      $imgs .= '<a href="'.$this->uploadPath.$image.'" rel="image" target="_blank">';
+                      $imgs .= '<img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="" title="'.$attrHash[$hashnum]['title'].'" />';
+                      $imgs .= '</a>';
+                    } elseif($this->linkMethod == "link" && !empty($attrHash[$hashnum]['href'])) {
+                    	$imgs .= '<a href="'.$attrHash[$hashnum]['href'].'" rel="image" target="_blank">';
+                      $imgs .= '<img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="" title="'.$attrHash[$hashnum]['title'].'" />';
+                      $imgs .= '</a>';
+                    } else {
+                      $imgs .= '<div><img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="'.$attrHash[$hashnum]['longdesc'].'" title="'.$attrHash[$hashnum]['title'].'" /></div>';
+                    }            
                     $hashnum++;
             }
             return($imgs);
                 
         }
-	
+	function getDirectoryImages() {  		 
+        if (is_dir($this->conf['directory'])) {
+  		  $images = array(); 
+  		  $images = $this->getFiles($this->conf['directory']);      	
+  		     
+        // add the images
+        foreach ($images as $key=>$value) {
+          $path = $this->conf['directory'].$value;
+
+					$imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
+					$imgs .= '<img src="'.$path.'" ';
+					if(!empty($this->conf['dModeImageTitle'])) {
+						$imgs .= 'title="'.$this->conf['dModeImageTitle'].'" ';
+					} else {
+						$imgs .= 'title=" " ';
+					}
+					if(!empty($this->conf['dModeImageAlt'])) {
+						$imgs .= 'alt="'.$this->conf['dModeImageAlt'].'" ';
+					} else {
+						$imgs .= 'alt=" " ';
+					}
+					
+          /* $imgs .= '<img src="'.$path.'" alt=" " title=" " />'; */
+          $imgs .= ' /></a>';	
+						         
+          
+        
+        } # end foreach file
+        
+  		  
+  		} # end is_dir 
+  		return $imgs;
+  }
+  
+  function getFiles($path, $extra = "") {
+    // check for needed slash at the end
+		$length = strlen($path);
+		if ($path{$length-1}!='/') { 
+      $path.='/';
+    }
+    
+    $imagetypes = $this->conf["filetypes"] ? explode(',', $this->conf["filetypes"]) : array(
+        'jpg',
+        'jpeg',
+        'gif',
+        'png'
+    );
+
+    if($dir = dir($path)) {
+        $files = Array();
+
+        while(false !== ($file = $dir->read())) {
+            if ($file != '.' && $file != '..') {
+                $ext = strtolower(substr($file, strrpos($file, '.')+1));
+                if (in_array($ext, $imagetypes)) {
+                    array_push($files, $extra . $file);
+                }
+                else if ($this->conf["recursive"] == '1' && is_dir($path . "/" . $file)) {
+                    $dirfiles = $this->getFiles($path . "/" . $file, $extra . $file . "/");
+                    if (is_array($dirfiles)) {
+                        $files = array_merge($files, $dirfiles);
+                    }
+                }
+            }
+        }
+
+        $dir->close();
+        // sort files, thx to all
+        sort($files);
+
+        return $files;
+    }
+  } # end getFiles
+  
+  
 	function getDamImages() {		
             // check if there's a localized version of the current content object
             $uid = $this->cObj->data['uid'];
@@ -374,7 +469,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
             // add image
             foreach ($images['files'] as $key=>$path) {    
               // get data from the single image
-              $fields = 'title,description,file_name';
+              $fields = 'title,description,file_name,instructions';
               $tables = 'tx_dam';
     
               // now i check the tx_dam table to see if there's a localization for the current DAM record (image)
@@ -389,14 +484,21 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
               $temp_where='uid = '.$key;
               $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $tables, $temp_where);
               $row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
-        
-
-              $imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
+        			/** 
+        			* Get link from instructions field if is available and linkMethod is "link" 
+        			* Elsewhere use picture path as link
+        			*/
+        			if($this->linkMethod == "link" && $row['instructions']) {
+        				/* url fix */
+        				if(substr($row['instructions'], 0, 1) != "h") {
+                	$row['instructions'] = 'http://'.$row['instructions'];
+                }                  
+								$imgs .= '<a href="'.$row['instructions'].'" rel="image" target="_blank">';
+							} else {
+              	$imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
+              }
               $imgs .= '<img src="'.$path.'" alt="'.$row['description'].'" title="'.$row['title'].'" />';
               $imgs .= '</a>';
-              
-              
-              
             } 
             return($imgs);
         } 
@@ -412,7 +514,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
           $files = Array();
             foreach($listArray as $cat) {				
               // add images from categories
-              $fields = 'tx_dam.uid,tx_dam.title,tx_dam.description,tx_dam.file_name,tx_dam.file_path';
+              $fields = 'tx_dam.uid,tx_dam.title,tx_dam.description,tx_dam.file_name,tx_dam.file_path,tx_dam.instructions';
               $tables = 'tx_dam,tx_dam_mm_cat';
               $temp_where = 'tx_dam.deleted = 0 AND tx_dam.file_mime_type=\'image\' AND tx_dam.hidden=0 AND tx_dam_mm_cat.uid_foreign='.$cat.' AND tx_dam_mm_cat.uid_local=tx_dam.uid';
               $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $tables, $temp_where);
@@ -422,13 +524,19 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
               }
             }
                       
-          
-          
             // add the image for real
           foreach ($files as $key=>$row) {
             $path =  $row['file_path'].$row['file_name'];
             
-            $imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
+            if($this->linkMethod == "link" && $row['instructions']) {
+        				/* url fix */
+        				if(substr($row['instructions'], 0, 1) != "h") {
+                	$row['instructions'] = 'http://'.$row['instructions'];
+                }                  
+								$imgs .= '<a href="'.$row['instructions'].'" rel="image" target="_blank">';
+						} else {
+              	$imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
+            }
             $imgs .= '<img src="'.$path.'" alt="'.$row['description'].'" title="'.$row['title'].'" />';
             $imgs .= '</a>';
           }			
