@@ -174,11 +174,9 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                 }
 		$GLOBALS['TSFE']->additionalHeaderData['startmooflow'] = $startJS;
 
+
 		
-		if(!empty($this->conf['images'])) {
-			$content = $this->buildHtmlOutput();
-		}
-		
+		$content = $this->buildHtmlOutput();
 		
 		return $this->pi_wrapInBaseClass($content);
 	}
@@ -189,6 +187,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 	 * @return  HTML Code
 	 */
 	 function buildHtmlOutput() {
+	  if(!empty($this->conf['params'])) {
 		$parapairs = explode("\n",$this->conf['params']);
   		foreach($parapairs as $item) {
                                 /* Reset the arrays */
@@ -210,6 +209,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                                   }
                                 }
      				$attrHash[$attrstr[0]] = $attr; 
+  		}
   		}
                 
                 $hashnum = 1;       
