@@ -30,6 +30,16 @@
                         <label index="cfa_mooflow.pi_flexform.useKeyInput">useKeyInput:</label>
                         <label index="cfa_mooflow.pi_flexform.useViewer">useViewer:</label>
                         <label index="cfa_mooflow.pi_flexform.useAutoPlay">useAutoPlay:</label>
+                        <label index="cfa_mooflow.pi_flexform.mode">Mode</label>
+                        <label index="cfa_mooflow.pi_flexform.mode.0">Images manually selection</label>         
+                        <label index="cfa_mooflow.pi_flexform.mode.1">Images from a directory</label>      
+                        <label index="cfa_mooflow.pi_flexform.mode.3">Images from DAM</label>
+                        <label index="cfa_mooflow.pi_flexform.mode.4">Images from DAM (categories)</label>   
+                        <label index="cfa_mooflow.pi_flexform.directorymode">Path to the directory</label>  
+                        <label index="cfa_mooflow.pi_flexform.moderecords">Startingpoint</label>
+                        <label index="cfa_mooflow.pi_flexform.modedam">Records</label>
+                        <label index="cfa_mooflow.pi_flexform.modedamcat">Records</label>
+   
 		</languageKey>
 		<languageKey index="de" type="array">
 			<label index="cfa_mooflow_images">MooFlow_Bilder</label>
@@ -55,7 +65,16 @@
                         <label index="cfa_mooflow.pi_flexform.useMouseWheel">useMouseWheel:</label>
                         <label index="cfa_mooflow.pi_flexform.useKeyInput">useKeyInput:</label>
                         <label index="cfa_mooflow.pi_flexform.useViewer">useViewer:</label>
-                        <label index="cfa_mooflow.pi_flexform.useAutoPlay">useAutoPlay:</label>                                                
+                        <label index="cfa_mooflow.pi_flexform.useAutoPlay">useAutoPlay:</label>
+                        <label index="cfa_mooflow.pi_flexform.mode">Modus</label>
+                        <label index="cfa_mooflow.pi_flexform.mode.0">Bilder manuell auswählen</label>         
+                        <label index="cfa_mooflow.pi_flexform.mode.1">Bilder aus einem Verzeichnis</label> 
+                        <label index="cfa_mooflow.pi_flexform.mode.3">Bilder aus DAM</label>
+                        <label index="cfa_mooflow.pi_flexform.mode.4">Bilder aus DAM (Kategorien)</label>
+                        <label index="cfa_mooflow.pi_flexform.directorymode">Pfad zu Bildern</label>  
+                        <label index="cfa_mooflow.pi_flexform.moderecords">Ausgangspunkt</label>
+                        <label index="cfa_mooflow.pi_flexform.modedam">Datensätze</label>
+                        <label index="cfa_mooflow.pi_flexform.modedamcat">Datensätze</label>
 		</languageKey>
 	</data>
 </T3locallang>
