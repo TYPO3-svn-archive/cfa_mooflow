@@ -263,7 +263,7 @@ var ReMooz = new Class({
 		if (this.options.shadow) {
 			if (Browser.Engine.webkit420) {
 				this.box.setStyle('-webkit-box-shadow', '0 0 10px rgba(0, 0, 0, 0.7)');
-			} else if (!Browser.Engine.trident4) {
+			} else if (!Browser.Engine.name == 'trident' && Browser.Engine.version == 4) {
 				var shadow = new Element('div', {'class': 'remooz-bg-wrap'}).inject(this.box);
 				['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'].each(function(dir) {
 					new Element('div', {'class': 'remooz-bg remooz-bg-' + dir}).inject(shadow);

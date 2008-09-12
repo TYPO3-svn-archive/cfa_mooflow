@@ -184,3 +184,18 @@
 	top:					-40px;
 	background:				url(remo_bg_nw.png) no-repeat;
 }
+
+<!--[if lte IE 6]>
+.remooz-title-content
+{
+	background-color:		#333;
+}
+.remooz-title-bg
+{
+	background-color:		#333;
+}
+.remooz-btn-close
+{
+	background-image:		url(closebox.gif);
+}
+<![endif]-->
