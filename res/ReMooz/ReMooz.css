@@ -185,17 +185,17 @@
 	background:				url(remo_bg_nw.png) no-repeat;
 }
 
-<!--[if lte IE 6]>
-.remooz-title-content
+/* Do some extra to get IE6 output as well as possible ;) */
+* html .remooz-title-content
 {
 	background-color:		#333;
 }
-.remooz-title-bg
+* html .remooz-title-bg
 {
 	background-color:		#333;
 }
-.remooz-btn-close
+* html .remooz-btn-close
 {
 	background-image:		url(closebox.gif);
 }
-<![endif]-->
+
