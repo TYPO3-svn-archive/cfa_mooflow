@@ -215,19 +215,19 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                 $hashnum = 1;       
                 $html = '
                         <div id="MooFlow" class="mf">';
-                        
-		$images = explode(",",$this->conf['images']);
-		foreach($images as $image) {
-                        if(!empty($attrHash[$hashnum]['href']) && !empty($attrHash[$hashnum]['rel']) && !empty($attrHash[$hashnum]['target'])) {
-                          $imgs .= '<a href="'.$attrHash[$hashnum]['href'].'" rel="'.$attrHash[$hashnum]['rel'].'" target="'.$attrHash[$hashnum]['target'].'">';
-                          $imgs .= '<img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="'.$attrHash[$hashnum]['longdesc'].'" title="'.$attrHash[$hashnum]['title'].'" />';
-                          $imgs .= '</a>';
-                        } else {
-			  $imgs .= '<div><img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="'.$attrHash[$hashnum]['longdesc'].'" title="'.$attrHash[$hashnum]['title'].'" /></div>';
-                        }
-			$hashnum++;
-		}
                 
+               
+                if ($this->conf['mode']=='MANUAL') {       
+		  $imgs = $this->getManualImages($attrHash,$hashnum);
+		} elseif ($this->conf['mode'] == 'DIRECTORY') {
+		  $imgs = $this->getDirectoryImages();
+                } elseif ($this->conf['mode']=='DAM') {
+                   $imgs = $this->getDamImages();
+                } elseif ($this->conf['mode']=='DAMCAT') {
+                   $imgs = $this->getDamCatImages();
+                }
+                
+                                            
                 $html .= $imgs.'</div>';
                 
 	 	return $html;
@@ -245,13 +245,34 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 		$this->pi_initPIflexForm();
                 
                 // Images
-		$ffimages = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'images','sPage1');
+		$ffimages = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'defaultmode','sPage1');
 		if(!empty($ffimages)) $this->conf['images'] = $ffimages;
-                
+    
+    // Directory
+    $ffdirectory = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'directorymode','sPage1');
+		if(!empty($ffdirectory)) $this->conf['directory'] = $ffdirectory;                
+    
+    $ffdModeImageTitle = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'dModeImageTitle','sPage1');
+		if(!empty($ffdModeImageTitle)) $this->conf['dModeImageTitle'] = $ffdModeImageTitle;
+		
+		$ffdModeImageAlt = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'dModeImageAlt','sPage1');
+		if(!empty($ffdModeImageAlt)) $this->conf['dModeImageAlt'] = $ffdModeImageAlt;
+		
                 // Image Parameter
 		$ffparams = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'params','sPage1');
 		if(!empty($ffparams)) $this->conf['params'] = $ffparams;
-                                                                
+                
+                // Mode selection
+                $ffmode = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'mode','sPage1');
+		if(!empty($ffmode)) $this->conf['mode'] = $ffmode;
+		
+		// Get DamCat
+		$ffmodedamcat = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'modedamcat','sPage1');
+		if(!empty($ffmodedamcat)) $this->conf['modedamcat'] = $ffmodedamcat;
+		
+		$ffrecursivedamcat = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'recursivedamcat','sPage1');
+		if(!empty($ffrecursivedamcat)) $this->conf['recursivedamcat'] = $ffrecursivedamcat;
+
                 //Reflection
 		$ffreflection = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'reflection','sPage2');
 		if(!empty($ffreflection)) $this->conf['reflection'] = $ffreflection;
@@ -317,12 +338,226 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 		$ffuseAutoPlay = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useAutoPlay','sPage2');
 		if(!empty($ffuseAutoPlay)) $this->conf['useAutoPlay'] = $ffuseAutoPlay;
 		
+
+
+
 		// Other generic settings are fetched
 		$this->conf['pidList'] = $this->cObj->data['pages'];
 		$this->conf['recursive'] = $this->cObj->data['recursive'];
 
 		return;
 	}
+	
+        function getManualImages($attrHash,$hashnum) {
+            $images = explode(",",$this->conf['images']);
+            foreach($images as $image) {
+                    if($this->linkMethod == "remooz") {
+                    	if($attrHash[0]) {
+                    		/* If there an override for all picture, use only this */
+                    		$hashnum = 0;
+                    	}
+                      $imgs .= '<a href="'.$this->uploadPath.$image.'" rel="image" target="_blank">';
+                      $imgs .= '<img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="" title="'.$attrHash[$hashnum]['title'].'" />';
+                      $imgs .= '</a>';
+                    } elseif($this->linkMethod == "link" && !empty($attrHash[$hashnum]['href'])) {
+                    	$imgs .= '<a href="'.$attrHash[$hashnum]['href'].'" rel="image" target="_blank">';
+                      $imgs .= '<img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="" title="'.$attrHash[$hashnum]['title'].'" />';
+                      $imgs .= '</a>';
+                    } else {
+                      $imgs .= '<div><img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="'.$attrHash[$hashnum]['longdesc'].'" title="'.$attrHash[$hashnum]['title'].'" /></div>';
+                    }            
+                    $hashnum++;
+            }
+            return($imgs);
+                
+        }
+	function getDirectoryImages() {  		 
+        if (is_dir($this->conf['directory'])) {
+  		  $images = array(); 
+  		  $images = $this->getFiles($this->conf['directory']);      	
+  		     
+        // add the images
+        foreach ($images as $key=>$value) {
+          $path = $this->conf['directory'].$value;
+
+					$imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
+					$imgs .= '<img src="'.$path.'" ';
+					if(!empty($this->conf['dModeImageTitle'])) {
+						$imgs .= 'title="'.$this->conf['dModeImageTitle'].'" ';
+					} else {
+						$imgs .= 'title=" " ';
+					}
+					if(!empty($this->conf['dModeImageAlt'])) {
+						$imgs .= 'alt="'.$this->conf['dModeImageAlt'].'" ';
+					} else {
+						$imgs .= 'alt=" " ';
+					}
+					
+          /* $imgs .= '<img src="'.$path.'" alt=" " title=" " />'; */
+          $imgs .= ' /></a>';	
+						         
+          
+        
+        } # end foreach file
+        
+  		  
+  		} # end is_dir 
+  		return $imgs;
+  }
+  
+  function getFiles($path, $extra = "") {
+    // check for needed slash at the end
+		$length = strlen($path);
+		if ($path{$length-1}!='/') { 
+      $path.='/';
+    }
+    
+    $imagetypes = $this->conf["filetypes"] ? explode(',', $this->conf["filetypes"]) : array(
+        'jpg',
+        'jpeg',
+        'gif',
+        'png'
+    );
+
+    if($dir = dir($path)) {
+        $files = Array();
+
+        while(false !== ($file = $dir->read())) {
+            if ($file != '.' && $file != '..') {
+                $ext = strtolower(substr($file, strrpos($file, '.')+1));
+                if (in_array($ext, $imagetypes)) {
+                    array_push($files, $extra . $file);
+                }
+                else if ($this->conf["recursive"] == '1' && is_dir($path . "/" . $file)) {
+                    $dirfiles = $this->getFiles($path . "/" . $file, $extra . $file . "/");
+                    if (is_array($dirfiles)) {
+                        $files = array_merge($files, $dirfiles);
+                    }
+                }
+            }
+        }
+
+        $dir->close();
+        // sort files, thx to all
+        sort($files);
+
+        return $files;
+    }
+  } # end getFiles
+  
+  
+	function getDamImages() {		
+            // check if there's a localized version of the current content object
+            $uid = $this->cObj->data['uid'];
+            if ($this->cObj->data['_LOCALIZED_UID']) {
+                    $uid = $this->cObj->data['_LOCALIZED_UID'];
+            }
+            $sys_language_uid = $GLOBALS['TSFE']->sys_language_content;
+    
+            // get all DAM files
+            $images = tx_dam_db::getReferencedFiles('tt_content',$uid,'cfa_mooflow','tx_dam_mm_ref');
+
+            // add image
+            foreach ($images['files'] as $key=>$path) {    
+              // get data from the single image
+              $fields = 'title,description,file_name,instructions';
+              $tables = 'tx_dam';
+    
+              // now i check the tx_dam table to see if there's a localization for the current DAM record (image)
+              $temp_where='l18n_parent = '.$key.' AND sys_language_uid = '.$sys_language_uid;
+              $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', $tables, $temp_where);
+              // if i find a localized record i overwrite the default language $key with the localized language $key
+              if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
+                $key = $row['uid'];
+              }
+              $GLOBALS['TYPO3_DB']->sql_free_result($res);
+              
+              $temp_where='uid = '.$key;
+              $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $tables, $temp_where);
+              $row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
+        			/** 
+        			* Get link from instructions field if is available and linkMethod is "link" 
+        			* Elsewhere use picture path as link
+        			*/
+        			if($this->linkMethod == "link" && $row['instructions']) {
+        				/* url fix */
+        				if(substr($row['instructions'], 0, 1) != "/") {
+                	$row['instructions'] = 'http://'.$row['instructions'];
+                }                  
+								$imgs .= '<a href="'.$row['instructions'].'" rel="image" target="_blank">';
+							} else {
+              	$imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
+              }
+              $imgs .= '<img src="'.$path.'" alt="'.$row['description'].'" title="'.$row['title'].'" />';
+              $imgs .= '</a>';
+            } 
+            return($imgs);
+        } 
+          
+        function getDamCatImages() {
+              // $content.=$this->beginGallery($this->config['id'],$limitImages);
+                
+                // add image
+          $list= str_replace('tx_dam_cat_', '',$this->conf['modedamcat']);
+      
+          $listRecursive = $this->getDamCatRecursive($list,$this->conf['recursivedamcat']);
+          $listArray = explode(',',$listRecursive);
+          $files = Array();
+            foreach($listArray as $cat) {				
+              // add images from categories
+              $fields = 'tx_dam.uid,tx_dam.title,tx_dam.description,tx_dam.file_name,tx_dam.file_path,tx_dam.instructions';
+              $tables = 'tx_dam,tx_dam_mm_cat';
+              $temp_where = 'tx_dam.deleted = 0 AND tx_dam.file_mime_type=\'image\' AND tx_dam.hidden=0 AND tx_dam_mm_cat.uid_foreign='.$cat.' AND tx_dam_mm_cat.uid_local=tx_dam.uid';
+              $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $tables, $temp_where);
+                    
+              while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)){
+                $files[$row['uid']] = $row; # just add the image to an array
+              }
+            }
+                      
+            // add the image for real
+          foreach ($files as $key=>$row) {
+            $path =  $row['file_path'].$row['file_name'];
+            
+            if($this->linkMethod == "link" && $row['instructions']) {
+        				/* url fix */
+        				if(substr($row['instructions'], 0, 1) != "/") {
+                	$row['instructions'] = 'http://'.$row['instructions'];
+                }                  
+								$imgs .= '<a href="'.$row['instructions'].'" rel="image" target="_blank">';
+						} else {
+              	$imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
+            }
+            $imgs .= '<img src="'.$path.'" alt="'.$row['description'].'" title="'.$row['title'].'" />';
+            $imgs .= '</a>';
+          }			
+          return($imgs);
+        }
+      
+        function getDamCatRecursive($id,$level=0) {
+          $result = $id.','; # add id of 1st level 
+          $idList = explode(',',$id);
+          
+          if ($level > 0) {
+            $level--;
+            
+            foreach ($idList as $key=>$value) {
+              $where = 'hidden=0 AND deleted=0 AND parent_id='.$id;
+              $res= $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_dam_cat', $where);
+              while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)){	
+                $all[$row['uid']]=$row['uid'];
+                $rec = $this->getDamCatRecursive($row['uid'],$level);
+                if ($rec!='')  {
+                  $result.=$rec.',';
+                }
+              }
+            } # end for each
+          } # end if level
+              
+          $result = str_replace(',,',',',$result);
+          $result = substr($result,0,-1);
+          return $result;
+        }        
 }
 
 
