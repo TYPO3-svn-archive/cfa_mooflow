@@ -166,7 +166,11 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 		
 		$GLOBALS['TSFE']->additionalHeaderData['mooflowCoreJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'mootools-1.2-core.js"></script>';
 		$GLOBALS['TSFE']->additionalHeaderData['mooflowMoreJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'mootools-1.2-more.js"></script>';
-		$GLOBALS['TSFE']->additionalHeaderData['mooflowJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'MooFlow.js"></script>';
+		if($this->clickOption == "single") {
+			$GLOBALS['TSFE']->additionalHeaderData['mooflowJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'MooFlow.Mod.js"></script>';
+		} else {
+		  $GLOBALS['TSFE']->additionalHeaderData['mooflowJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'MooFlow.js"></script>';
+		}
 		$GLOBALS['TSFE']->additionalHeaderData['mooflowCSS'] = '<link rel="stylesheet" type="text/css" href="'.$this->webPath.'MooFlow.css" />';
                 if($this->linkMethod == "remooz") {
                   $GLOBALS['TSFE']->additionalHeaderData['remoozCSS'] = '<link rel="stylesheet" type="text/css" href="'.$this->webPath.'ReMooz/ReMooz.css" />';
@@ -174,11 +178,9 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                 }
 		$GLOBALS['TSFE']->additionalHeaderData['startmooflow'] = $startJS;
 
+
 		
-		if(!empty($this->conf['images'])) {
-			$content = $this->buildHtmlOutput();
-		}
-		
+		$content = $this->buildHtmlOutput();
 		
 		return $this->pi_wrapInBaseClass($content);
 	}
@@ -189,6 +191,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 	 * @return  HTML Code
 	 */
 	 function buildHtmlOutput() {
+	  if(!empty($this->conf['params'])) {
 		$parapairs = explode("\n",$this->conf['params']);
   		foreach($parapairs as $item) {
                                 /* Reset the arrays */
@@ -210,6 +213,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                                   }
                                 }
      				$attrHash[$attrstr[0]] = $attr; 
+  		}
   		}
                 
                 $hashnum = 1;       
@@ -281,6 +285,9 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 		$fflinkMethod = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'linkMethod','sPage2');
 		if(!empty($fflinkMethod)) $this->linkMethod = $fflinkMethod;
 
+                //Click Option
+		$ffclickOption = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'clickOption','sPage2');
+		if(!empty($ffclickOption)) $this->clickOption = $ffclickOption;
 		
 		//heightRatio
 		$ffheightRatio = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'heightRatio','sPage2');
@@ -351,15 +358,6 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
         function getManualImages($attrHash,$hashnum) {
             $images = explode(",",$this->conf['images']);
             foreach($images as $image) {
-            /*
-                    if(!empty($attrHash[$hashnum]['href']) && !empty($attrHash[$hashnum]['rel']) && !empty($attrHash[$hashnum]['target'])) {
-                      $imgs .= '<a href="'.$attrHash[$hashnum]['href'].'" rel="'.$attrHash[$hashnum]['rel'].'" target="'.$attrHash[$hashnum]['target'].'">';
-                      $imgs .= '<img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="'.$attrHash[$hashnum]['longdesc'].'" title="'.$attrHash[$hashnum]['title'].'" />';
-                      $imgs .= '</a>';
-                    } else {
-                      $imgs .= '<div><img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="'.$attrHash[$hashnum]['longdesc'].'" title="'.$attrHash[$hashnum]['title'].'" /></div>';
-                    }
-            */
                     if($this->linkMethod == "remooz") {
                     	if($attrHash[0]) {
                     		/* If there an override for all picture, use only this */
@@ -490,7 +488,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
         			*/
         			if($this->linkMethod == "link" && $row['instructions']) {
         				/* url fix */
-        				if(substr($row['instructions'], 0, 1) != "h") {
+        				if(substr($row['instructions'], 0, 1) != "/") {
                 	$row['instructions'] = 'http://'.$row['instructions'];
                 }                  
 								$imgs .= '<a href="'.$row['instructions'].'" rel="image" target="_blank">';
@@ -530,7 +528,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
             
             if($this->linkMethod == "link" && $row['instructions']) {
         				/* url fix */
-        				if(substr($row['instructions'], 0, 1) != "h") {
+        				if(substr($row['instructions'], 0, 1) != "/") {
                 	$row['instructions'] = 'http://'.$row['instructions'];
                 }                  
 								$imgs .= '<a href="'.$row['instructions'].'" rel="image" target="_blank">';
