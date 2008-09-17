@@ -25,6 +25,7 @@
 require_once(PATH_tslib.'class.tslib_pibase.php');
 
 
+
 /**
  * Plugin 'MooFlow V0.2 integration' for the 'cfa_mooflow' extension.
  *
@@ -41,6 +42,8 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 	var $webPath       = 'typo3conf/ext/cfa_mooflow/res/';
 	var $pi_checkCHash = true;
         var $linkMethod    = 'remooz';	
+	var $catArray = Array();
+	var $catCaptionArray = Array();
 
 	/**
 	 * The main method of the PlugIn
@@ -55,6 +58,10 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 		$this->pi_USER_INT_obj=1;	// Configuring so caching is not expected. This value means that no cHash params are ever set. We do this, because it's a USER_INT object!
 		$this->filePath = dirname(t3lib_div::getIndpEnv("SCRIPT_FILENAME")).'/';
 		$this->initFlexformAndConfig($conf);
+		if(!empty($this->conf['useDynLoader']) && $this->conf['mode']=='DAMCAT') {
+                  /* Call this function only to get the categories without return code */
+                  $this->getDamCatImages();
+                }
 		
 		$startJS = '
                           <script type="text/javascript">
@@ -117,9 +124,12 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                 if(!empty($this->conf['useAutoPlay'])) {
                   $startJS .= 'useAutoPlay: true,'."\n";
                 }
+                $startJS .= '\'onEmptyinit\': function(){
+                              this.loadJSON(\'index.php?eID=tx_cfamooflow_pi1&damcat='.$this->catArray[0].'\');
+                            },'."\n";
                 /* Cut off last char if needed */
                 // $startJS = substr($startJS, 0, -1);
-                
+
                 /* Callback function */                
                 if($this->linkMethod == "link") {
                 $startJS .= '
@@ -127,7 +137,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                                       myMooFlowPage.link(obj);
                                   }  
                                 });
-                              },';              
+                              },';            
                 } elseif($this->linkMethod == "remooz") {
                 $startJS .= '
                                   \'onClickView\': function(obj){
@@ -146,6 +156,11 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                                 $$(\'.loadremote\').addEvent(\'click\', function(){
                                         mf.loadHTML(this.get(\'href\'), this.get(\'rel\'));
                                         return false;
+                                });
+                                /* Dynloader */
+                                $$(\'.loadjson\').addEvent(\'click\', function(){
+                                  mf.loadJSON(this.get(\'href\'));
+                                  return false;
                                 });
                               },';
                 }
@@ -200,10 +215,14 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                                 unset($attrpair);
                                 unset($attr);
 
-     				$attrstr = explode("=",$item);
+     				//$attrstr = explode("=",$item); obsolte
+     				// We do need a split function working with escape character to avoid delimiter characters from split
+     				//if using inside the string. Needed to get url (which have : inside) in title and/or description.
+     				$attrstr = $this->splitWithEscape($item,'=','#');
      				$attrstrpair = explode(";",$attrstr[1]);
      				foreach($attrstrpair as $keyvalue) {
-        				$attrpair = explode(":",$keyvalue);
+        				//$attrpair = explode(":",$keyvalue); obsolete see description above
+        				$attrpair = $this->splitWithEscape($keyvalue,':','#');        				
         				$attr[$attrpair[0]] = $attrpair[1];
      				}
                                 /* url fix */
@@ -219,21 +238,29 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                 $hashnum = 1;       
                 $html = '
                         <div id="MooFlow" class="mf">';
-                
+                /* DynLoader */
+                if(!empty($this->conf['useDynLoader']) && $this->conf['mode']=='DAMCAT') {
+                  $html .= '</div><div id="tx_cfamooflow_pi1_dynLoaderControl">';
+                  foreach($this->catArray as $cat) {
+                    $html .= '<div class="tx_cfamooflow_pi1_loadjson"><a class="loadjson" href="index.php?eID=tx_cfamooflow_pi1&damcat='.$cat.'" >'.$this->catCaptionArray[$cat].'</a></div>';
+                  }
+                  
+                  $html .= '</div>';
+                  
+                } else {
                
-                if ($this->conf['mode']=='MANUAL') {       
-		  $imgs = $this->getManualImages($attrHash,$hashnum);
-		} elseif ($this->conf['mode'] == 'DIRECTORY') {
-		  $imgs = $this->getDirectoryImages();
-                } elseif ($this->conf['mode']=='DAM') {
-                   $imgs = $this->getDamImages();
-                } elseif ($this->conf['mode']=='DAMCAT') {
-                   $imgs = $this->getDamCatImages();
+                  if ($this->conf['mode']=='MANUAL') {       
+                    $imgs = $this->getManualImages($attrHash,$hashnum);
+                  } elseif ($this->conf['mode'] == 'DIRECTORY') {
+                    $imgs = $this->getDirectoryImages();
+                  } elseif ($this->conf['mode']=='DAM') {
+                    $imgs = $this->getDamImages();
+                  } elseif ($this->conf['mode']=='DAMCAT') {
+                    $imgs = $this->getDamCatImages();
+                  }
+                          
+                  $html .= $imgs.'</div>';
                 }
-                
-                                            
-                $html .= $imgs.'</div>';
-                
 	 	return $html;
 	 }
 	
@@ -289,6 +316,10 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 		$ffclickOption = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'clickOption','sPage2');
 		if(!empty($ffclickOption)) $this->clickOption = $ffclickOption;
 		
+		//DynLoader
+		$ffuseDynLoader = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useDynLoader','sPage1');
+		if(!empty($ffuseDynLoader)) $this->conf['useDynLoader'] = $ffuseDynLoader;		
+
 		//heightRatio
 		$ffheightRatio = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'heightRatio','sPage2');
 		if(!empty($ffheightRatio)) $this->conf['heightRatio'] = $ffheightRatio;
@@ -502,11 +533,10 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
         } 
           
         function getDamCatImages() {
-              // $content.=$this->beginGallery($this->config['id'],$limitImages);
-                
+  
                 // add image
           $list= str_replace('tx_dam_cat_', '',$this->conf['modedamcat']);
-      
+
           $listRecursive = $this->getDamCatRecursive($list,$this->conf['recursivedamcat']);
           $listArray = explode(',',$listRecursive);
           $files = Array();
@@ -516,10 +546,27 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
               $tables = 'tx_dam,tx_dam_mm_cat';
               $temp_where = 'tx_dam.deleted = 0 AND tx_dam.file_mime_type=\'image\' AND tx_dam.hidden=0 AND tx_dam_mm_cat.uid_foreign='.$cat.' AND tx_dam_mm_cat.uid_local=tx_dam.uid';
               $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $tables, $temp_where);
-                    
+                   
               while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)){
                 $files[$row['uid']] = $row; # just add the image to an array
               }
+              
+              /* The dynLoader need the cat title to set this as caption */
+              if(!empty($this->conf['useDynLoader'])) {
+                array_push($this->catArray,$cat);
+                $field = 'title';
+                $table = 'tx_dam_cat';
+                $where = 'uid='.$cat;
+                $catres = $GLOBALS['TYPO3_DB']->exec_SELECTquery($field, $table, $where);
+                while($catrow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($catres)){
+                  $this->catCaptionArray[$cat] = $catrow['title'];
+                }
+              }
+            }
+            
+            /* If DynLoader is active, just get the categories and return */
+            if(!empty($this->conf['useDynLoader'])) {
+              return;
             }
                       
             // add the image for real
@@ -564,7 +611,50 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
           $result = str_replace(',,',',',$result);
           $result = substr($result,0,-1);
           return $result;
-        }        
+        }  
+        function splitWithEscape($str, $delimiterChar = ',', $escapeChar = '"') {
+			    $len = strlen($str);
+			    $tokens = array();
+			    $i = 0;
+			    $inEscapeSeq = false;
+			    $currToken = '';
+			    while ($i < $len) {
+			        $c = substr($str, $i, 1);
+			        if ($inEscapeSeq) {
+			            if ($c == $escapeChar) {
+			                // lookahead to see if next character is also an escape char
+			                if ($i == ($len - 1)) {
+			                    // c is last char, so must be end of escape sequence
+			                    $inEscapeSeq = false;
+			                } else if (substr($str, $i + 1, 1) == $escapeChar) {
+			                    // append literal escape char
+			                    $currToken .= $escapeChar;
+			                    $i++;
+			                } else {
+			                    // end of escape sequence
+			                    $inEscapeSeq = false;
+			                }
+			            } else {
+			                $currToken .= $c;
+			            }
+			        } else {
+			            if ($c == $delimiterChar) {
+			                // end of token, flush it
+			                array_push($tokens, $currToken);
+			                $currToken = '';
+			            } else if ($c == $escapeChar) {
+			                // begin escape sequence
+			                $inEscapeSeq = true;
+			            } else {
+			                $currToken .= $c;
+			            }
+			        }
+			        $i++;
+			    }
+			    // flush the last token
+			    array_push($tokens, $currToken);
+			    return $tokens;
+			}      
 }
 
 
