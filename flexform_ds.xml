@@ -131,7 +131,27 @@
                 <size>1</size>
               </config>
             </TCEforms>
-          </linkMethod>              
+          </linkMethod>
+          <clickOption>
+            <TCEforms>
+              <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.clickOption</label>
+              <config>
+                <type>select</type>
+                <items type="array">
+                  <numIndex index="0" type="array">
+                    <numIndex index="0">Double</numIndex>
+                    <numIndex index="1">double</numIndex>
+                  </numIndex>
+                  <numIndex index="1" type="array">
+                    <numIndex index="0">Single</numIndex>
+                    <numIndex index="1">single</numIndex>
+                  </numIndex>
+                </items>    
+                <maxitems>1</maxitems>
+                <size>1</size>
+              </config>
+            </TCEforms>
+          </clickOption>              
               <reflection>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.reflection</label>
