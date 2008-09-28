@@ -172,8 +172,7 @@
                 <autoSizeMax>30</autoSizeMax>
               </config>
             </TCEforms>
-          </modedamcat>  
-              <!--        
+          </modedamcat>          
               <useDynLoader>
                   <TCEforms>
                   <displayCond>FIELD:mode:=:DAMCAT</displayCond>
@@ -185,7 +184,6 @@
                     </config>
                   </TCEforms>
               </useDynLoader>            
-              -->
           <recursivedamcat>
             <TCEforms>
               <displayCond>FIELD:mode:=:DAMCAT</displayCond>

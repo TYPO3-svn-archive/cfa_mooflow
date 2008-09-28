@@ -162,6 +162,12 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                             /* Dynloader */
                             $$(\'.loadjson\').addEvent(\'click\', function(){
                               mf.loadJSON(this.get(\'href\'));
+                              $(\'isInitLoadCat\').removeClass(\'isInitLoadCat\');
+                              var allToggler = $$(\'.tx_cfamooflow_pi1_loadjson\');
+															allToggler.each(function(item, index){
+																item.removeClass(\'activeCatMarker\');
+															});
+															this.getParent().addClass(\'activeCatMarker\');
                               return false;
                             });
                           },';
@@ -241,8 +247,14 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
     /* DynLoader */
     if(!empty($this->conf['useDynLoader']) && $this->conf['mode']=='DAMCAT') {
       $html .= '</div><div id="tx_cfamooflow_pi1_dynLoaderControl">';
+      $countCat = 0;
       foreach($this->catArray as $cat) {
-        $html .= '<div class="tx_cfamooflow_pi1_loadjson"><a class="loadjson" href="index.php?eID=tx_cfamooflow_pi1&damcat='.$cat.'" >'.$this->catCaptionArray[$cat].'</a></div>';
+         if($countCat == 0) {
+                $html .= '<div id="isInitLoadCat" class="tx_cfamooflow_pi1_loadjson isInitLoadCat"><a class="loadjson" href="index.php?eID=tx_cfamooflow_pi1&amp;damcat='.$cat.'" >'.$this->catCaptionArray[$cat].'</a></div>';
+         } else {
+        	$html .= '<div class="tx_cfamooflow_pi1_loadjson"><a class="loadjson" href="index.php?eID=tx_cfamooflow_pi1&amp;damcat='.$cat.'" >'.$this->catCaptionArray[$cat].'</a></div>';
+        }
+        ++$countCat;
       }
       
       $html .= '<div style="clear:both"></div></div>';

@@ -338,17 +338,21 @@ var MooFlow = new Class({
 		//this.aniFx.cancel();
 		if(this.sli) this.sli.set(index);
 		this.glideTo(index);
-		this.loadedImages[index].setStyles({'cursor':'pointer'});
-		this.loadedImages[prevIndex].setStyles({'cursor':'default'});
-		this.loadedImages[index].removeEvents();
-		this.loadedImages[prevIndex].removeEvents();
-		this.loadedImages[index].addEvents({'click': this.viewCallBack.bind(this, index)});
-		this.loadedImages[prevIndex].addEvents({'click': this.clickTo.bind(this, prevIndex)});
+		
 	},
 	glideTo: function(index){
+	  prevIndex = this.index;
 		this.index = index;
 		this.aniFx.start(this.aniFx.get(), index*-this.foc);
 		if(this.cap) this.cap.set('html', this.getCurrent().title);
+		if(index != prevIndex) {
+			this.loadedImages[index].setStyles({'cursor':'pointer'});
+			this.loadedImages[prevIndex].setStyles({'cursor':'default'});
+			this.loadedImages[index].removeEvents();
+			this.loadedImages[prevIndex].removeEvents();
+			this.loadedImages[index].addEvents({'click': this.viewCallBack.bind(this, index)});
+			this.loadedImages[prevIndex].addEvents({'click': this.clickTo.bind(this, prevIndex)});
+		}
 	},
 	process: function(x){
 		var z,W,H,zI=this.iL,foc=this.foc,f=this.factor,sz=this.sz,oW=this.oW,offY=this.offY,div,elh,elw;
