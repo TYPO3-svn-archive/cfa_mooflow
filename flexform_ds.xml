@@ -157,7 +157,7 @@
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.reflection</label>
                     <config>
                       <type>input</type>
-                      <eval>double2</eval> 
+                      <eval>double</eval> 
                       <maxitems>1</maxitems>
                       <size>1</size>
                     </config>
@@ -168,7 +168,7 @@
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.heightRatio</label>
                     <config>
                       <type>input</type>
-                      <eval>double2</eval> 
+                      <eval>double</eval> 
                       <maxitems>1</maxitems>
                       <size>1</size>
                     </config>
