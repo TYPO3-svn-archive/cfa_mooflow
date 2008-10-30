@@ -78,7 +78,6 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                 }
                 if(!empty($this->conf['heightRatio'])) {
                   $heightRatio = $this->conf['heightRatio'];
-                  $heightRatio = substr($heightRatio, 0, -1);
                   $startJS .= 'heightRatio: '.$heightRatio.','."\n";
                 }
                 if(!empty($this->conf['offsetY'])) {
