@@ -163,10 +163,10 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                               mf.loadJSON(this.get(\'href\'));
                               $(\'isInitLoadCat\').removeClass(\'isInitLoadCat\');
                               var allToggler = $$(\'.tx_cfamooflow_pi1_loadjson\');
-															allToggler.each(function(item, index){
-																item.removeClass(\'activeCatMarker\');
-															});
-															this.getParent().addClass(\'activeCatMarker\');
+                              allToggler.each(function(item, index){
+                                      item.removeClass(\'activeCatMarker\');
+                              });
+                              this.getParent().addClass(\'activeCatMarker\');
                               return false;
                             });
                           },';
@@ -212,32 +212,32 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 	 */
 	 function buildHtmlOutput() {
 	  if(!empty($this->conf['params'])) {
-			$parapairs = explode("\n",$this->conf['params']);
-  		foreach($parapairs as $item) {
-	      /* Reset the arrays */
-	      unset($attrstr);
-	      unset($attrstrpair);
-	      unset($attrpair);
-	      unset($attr);
+            $parapairs = explode("\n",$this->conf['params']);
+            foreach($parapairs as $item) {
+              /* Reset the arrays */
+              unset($attrstr);
+              unset($attrstrpair);
+              unset($attrpair);
+              unset($attr);
 
- 				//$attrstr = explode("=",$item); obsolte
- 				// We do need a split function working with escape character to avoid delimiter characters from split
- 				//if using inside the string. Needed to get url (which have : inside) in title and/or description.
- 				$attrstr = $this->splitWithEscape($item,'=','#');
- 				$attrstrpair = explode(";",$attrstr[1]);
- 				foreach($attrstrpair as $keyvalue) {
-    				//$attrpair = explode(":",$keyvalue); obsolete see description above
-    				$attrpair = $this->splitWithEscape($keyvalue,':','#');        				
-    				$attr[$attrpair[0]] = $attrpair[1];
- 				}
-        /* url fix */
-        if(!empty($attr['href'])) {
-          if(substr($attr['href'], 0, 1) != "/") {
-            $attr['href'] = 'http://'.$attr['href'];
+              //$attrstr = explode("=",$item); obsolte
+              // We do need a split function working with escape character to avoid delimiter characters from split
+              //if using inside the string. Needed to get url (which have : inside) in title and/or description.
+              $attrstr = $this->splitWithEscape($item,'=','#');
+              $attrstrpair = explode(";",$attrstr[1]);
+              foreach($attrstrpair as $keyvalue) {
+                //$attrpair = explode(":",$keyvalue); obsolete see description above
+                $attrpair = $this->splitWithEscape($keyvalue,':','#');        				
+                $attr[$attrpair[0]] = $attrpair[1];
+              }
+              /* url fix */
+              if(!empty($attr['href'])) {
+                if(substr($attr['href'], 0, 1) != "/") {
+                  $attr['href'] = 'http://'.$attr['href'];
+                }
+              }
+          $attrHash[$attrstr[0]] = $attr; 
           }
-        }
- 				$attrHash[$attrstr[0]] = $attr; 
-  		}
   	}
                 
     $hashnum = 1;       
@@ -411,8 +411,18 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
           $imgs .= '<a href="'.$this->uploadPath.$image.'" rel="image" target="_blank">';
           $imgs .= '<img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="" title="'.$attrHash[$hashnum]['title'].'" />';
           $imgs .= '</a>';
-        } elseif($this->linkMethod == "link" && !empty($attrHash[$hashnum]['href'])) {
-        	$imgs .= '<a href="'.$attrHash[$hashnum]['href'].'" rel="image" target="_blank">';
+        } elseif($this->linkMethod == "link") {
+           if(empty($attrHash[$hashnum]['href'])) {
+              $href = $this->uploadPath.$image;
+           } else {
+              $href = $attrHash[$hashnum]['href'];
+           }
+           if(empty($attrHash[$hashnum]['target'])) {
+            $target = '_blank';   
+           } else {
+            $target = $attrHash[$hashnum]['target'];
+           }	
+          $imgs .= '<a href="'.$href.'" rel="image" target="'.$target.'">';
           $imgs .= '<img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="" title="'.$attrHash[$hashnum]['title'].'" />';
           $imgs .= '</a>';
         } else {
@@ -432,24 +442,22 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
         foreach ($images as $key=>$value) {
           $path = $this->conf['directory'].$value;
 
-					$imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
-					$imgs .= '<img src="'.$path.'" ';
-					if(!empty($this->conf['dModeImageTitle'])) {
-						$imgs .= 'title="'.$this->conf['dModeImageTitle'].'" ';
-					} else {
-						$imgs .= 'title=" " ';
-					}
-					if(!empty($this->conf['dModeImageAlt'])) {
-						$imgs .= 'alt="'.$this->conf['dModeImageAlt'].'" ';
-					} else {
-						$imgs .= 'alt=" " ';
-					}
+          $imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
+          $imgs .= '<img src="'.$path.'" ';
+          if(!empty($this->conf['dModeImageTitle'])) {
+                  $imgs .= 'title="'.$this->conf['dModeImageTitle'].'" ';
+          } else {
+                  $imgs .= 'title=" " ';
+          }
+          if(!empty($this->conf['dModeImageAlt'])) {
+                  $imgs .= 'alt="'.$this->conf['dModeImageAlt'].'" ';
+          } else {
+                  $imgs .= 'alt=" " ';
+          }
 					
           /* $imgs .= '<img src="'.$path.'" alt=" " title=" " />'; */
           $imgs .= ' /></a>';	
-						         
-          
-        
+
         } # end foreach file
         
   		  
@@ -527,17 +535,17 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
       $temp_where='uid = '.$key;
       $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $tables, $temp_where);
       $row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
-			/** 
-			* Get link from instructions field if is available and linkMethod is "link" 
-			* Elsewhere use picture path as link
-			*/
-			if($this->linkMethod == "link" && $row['instructions']) {
-				/* url fix */
-				if(substr($row['instructions'], 0, 1) != "/") {
-        	$row['instructions'] = 'http://'.$row['instructions'];
+      /** 
+      * Get link from instructions field if is available and linkMethod is "link" 
+      * Elsewhere use picture path as link
+      */
+      if($this->linkMethod == "link" && $row['instructions']) {
+        /* url fix */
+        if(substr($row['instructions'], 0, 1) != "/") {
+          $row['instructions'] = 'http://'.$row['instructions'];
         }                  
-				$imgs .= '<a href="'.$row['instructions'].'" rel="image" target="_blank">';
-			} else {
+	$imgs .= '<a href="'.$row['instructions'].'" rel="image" target="_blank">';
+      } else {
       	$imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
       }
       $imgs .= '<img src="'.$path.'" alt="'.$row['description'].'" title="'.$row['title'].'" />';
