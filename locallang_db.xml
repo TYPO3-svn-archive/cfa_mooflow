@@ -21,7 +21,7 @@
                         <label index="cfa_mooflow.pi_flexform.heightRatio">heightRatio:</label>
                         <label index="cfa_mooflow.pi_flexform.offsetY">offsetY:</label>
                         <label index="cfa_mooflow.pi_flexform.startIndex">startIndex:</label>
-                        <label index="cfa_mooflow.pi_flexform.interval">interval:</label>
+                        <label index="cfa_mooflow.pi_flexform.interval">interval ms:</label>
                         <label index="cfa_mooflow.pi_flexform.factor">factor:</label>
                         <label index="cfa_mooflow.pi_flexform.bgColor">bgColor:</label>
                         <label index="cfa_mooflow.pi_flexform.useCaption">useCaption:</label>
@@ -32,6 +32,7 @@
                         <label index="cfa_mooflow.pi_flexform.useKeyInput">useKeyInput:</label>
                         <label index="cfa_mooflow.pi_flexform.useViewer">useViewer:</label>
                         <label index="cfa_mooflow.pi_flexform.useAutoPlay">useAutoPlay:</label>
+                        <label index="cfa_mooflow.pi_flexform.useAutoPlayOnStart">Autoplay on Start:</label>
                         <label index="cfa_mooflow.pi_flexform.mode">Mode</label>
                         <label index="cfa_mooflow.pi_flexform.mode.0">Images manually selection</label>         
                         <label index="cfa_mooflow.pi_flexform.mode.1">Images from a directory</label>      
@@ -59,7 +60,7 @@
                         <label index="cfa_mooflow.pi_flexform.heightRatio">heightRatio:</label>
                         <label index="cfa_mooflow.pi_flexform.offsetY">offsetY:</label>
                         <label index="cfa_mooflow.pi_flexform.startIndex">startIndex:</label>
-                        <label index="cfa_mooflow.pi_flexform.interval">interval:</label>
+                        <label index="cfa_mooflow.pi_flexform.interval">interval ms:</label>
                         <label index="cfa_mooflow.pi_flexform.factor">factor:</label>
                         <label index="cfa_mooflow.pi_flexform.bgColor">bgColor:</label>
                         <label index="cfa_mooflow.pi_flexform.useCaption">useCaption:</label>
@@ -70,6 +71,7 @@
                         <label index="cfa_mooflow.pi_flexform.useKeyInput">useKeyInput:</label>
                         <label index="cfa_mooflow.pi_flexform.useViewer">useViewer:</label>
                         <label index="cfa_mooflow.pi_flexform.useAutoPlay">useAutoPlay:</label>
+                        <label index="cfa_mooflow.pi_flexform.useAutoPlayOnStart">Autoplay on Start:</label>
                         <label index="cfa_mooflow.pi_flexform.mode">Modus</label>
                         <label index="cfa_mooflow.pi_flexform.mode.0">Bilder manuell auswählen</label>         
                         <label index="cfa_mooflow.pi_flexform.mode.1">Bilder aus einem Verzeichnis</label> 

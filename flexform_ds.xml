@@ -308,7 +308,17 @@
                       <size>1</size>
                     </config>
                   </TCEforms>
-              </useAutoPlay>                            
+              </useAutoPlay>
+              <useAutoPlayOnStart>
+                  <TCEforms>
+                    <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.useAutoPlayOnStart</label>
+                    <config>
+                      <type>check</type>
+                      <maxitems>1</maxitems>
+                      <size>1</size>
+                    </config>
+                  </TCEforms>
+              </useAutoPlayOnStart>                            
           </el>
       </ROOT>
     </sPage2>
