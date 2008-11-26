@@ -73,7 +73,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                 $startJS .= "\n";
                 if(!empty($this->conf['reflection'])) {
                   $reflection = $this->conf['reflection'];
-                  $reflection = substr($reflection, 0, -1);
+                  //$reflection = substr($reflection, 0, -1);
                   $startJS .= 'reflection: '.$reflection.','."\n";
                 }
                 if(!empty($this->conf['heightRatio'])) {
@@ -131,7 +131,16 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                 /* Cut off last char if needed */
                 // $startJS = substr($startJS, 0, -1);
 
-                /* Callback function */                
+                /* Callback function */  
+                /* Start autoPlay from onStart function */
+                if(!empty($this->conf['useAutoPlayOnStart'])) {
+                	$startJS .= '
+      			\'onStart\': function(){
+	      		this.autoPlay = this.auto.periodical(this.options.interval, this);
+			this.isAutoPlay = true;
+			this.fireEvent(\'autoPlay\');
+    			},';              
+    		}
                 if($this->linkMethod == "link") {
                 $startJS .= '
                             \'onClickView\': function(obj){
@@ -386,11 +395,13 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 		$ffuseViewer = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useViewer','sPage2');
 		if(!empty($ffuseViewer)) $this->conf['useViewer'] = $ffuseViewer;
 
-    //useAutoPlay
+    		//useAutoPlay
 		$ffuseAutoPlay = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useAutoPlay','sPage2');
 		if(!empty($ffuseAutoPlay)) $this->conf['useAutoPlay'] = $ffuseAutoPlay;
 		
-
+                //Autoplay on Start
+		$ffuseAutoPlayOnStart = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useAutoPlayOnStart','sPage2');
+		if(!empty($ffuseAutoPlayOnStart)) $this->conf['useAutoPlayOnStart'] = $ffuseAutoPlayOnStart;
 
 
 		// Other generic settings are fetched
