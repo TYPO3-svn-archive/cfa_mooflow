@@ -17,30 +17,59 @@ var MooFlow = new Class({
 	
 	options: {
 		onStart: $empty,
-		onClickView: $empty,
 		onAutoPlay: $empty,
 		onAutoStop: $empty,
 		onRequest: $empty,
 		onResized: $empty,
 		onEmptyinit: $empty,
-		reflection: 0.4,
-		heightRatio: 0.6,
-		offsetY: 0,
-		startIndex: 0,
-		interval: 3000,
-		factor: 115,
-		bgColor: '#000',
-		useCaption: false,
-		useResize: false,
-		useSlider: false,
-		useWindowResize: false,
-		useMouseWheel: true,
-		useKeyInput: false,
-		useViewer: false
+'onClickView':
+           function(obj){
+            var img = new Element('img',{src:obj.src, title:obj.title, alt:obj.alt, styles:obj.coords}).setStyles({'position':'absolute','border':'none'});
+            var link = new Element('a',{'class':'remooz-element','href':obj.href,'title':obj.title + ' - '+ obj.alt, styles:{'border':'none'}});
+            $(document.body).adopt(link.adopt(img));
+            var remooz = new ReMooz(link, {
+              centered: true,
+              resizeFactor: 0.8,
+              origin: link.getElement('img'),
+              onCloseEnd: function(){link.destroy()}
+              });
+            remooz.open();
+          
+          
+          $$('.loadremote').addEvent('click', function(){
+            mf.loadHTML(this.get('href'), this.get('rel'));
+            return false;
+          });
+          /* Dynloader */
+          $$('.loadjson').addEvent('click', function(){
+            mf.loadJSON(this.get('href'));
+            $('isInitLoadCat').removeClass('isInitLoadCat');
+            var allToggler = $$('.tx_cfamooflow_pi1_loadjson');
+            allToggler.each(function(item, index){
+              item.removeClass('activeCatMarker');
+            });
+            this.getParent().addClass('activeCatMarker');
+            return false;
+          });
+          },
+reflection:0.40,
+heightRatio:0.60,
+offsetY:0,
+startIndex:1,
+interval:3000,
+factor:115,
+bgColor:'transparent',
+useCaption:1,
+useResize:1,
+useSlider:1,
+useWindowResize:1,
+useMouseWheel:1,
+useKeyInput:1,
+useViewer:1
 	},
 	
 	initialize: function(element, options){
-		this.MooFlow = element;
+		this.MooFlow = $(element);
 		this.setOptions(options);
 		this.foc = 150;
 		this.factor = this.options.factor;
@@ -54,10 +83,11 @@ var MooFlow = new Class({
 			'overflow':'hidden',
 			'background-color':this.options.bgColor,
 			'position':'relative',
-			'height':this.MooFlow.getSize().x*this.options.heightRatio,
+			'height':this.MooFlow.getSize().x * this.options.heightRatio,
 			'opacity':0
 		});
-		
+		//alert(this.MooFlow.getSize().x);
+
 		if(this.options.useWindowResize) window.addEvent('resize', this.update.bind(this, 'init'));
 		if(this.options.useMouseWheel || this.options.useSlider) this.MooFlow.addEvent('mousewheel', this.wheelTo.bind(this));
 		if(this.options.useKeyInput) document.addEvent('keydown', this.keyTo.bind(this));
@@ -147,8 +177,13 @@ var MooFlow = new Class({
 			'height': this.MooFlow.getSize().y
 		}).inject(this.MooFlow);
 		obj['con'] = new Element('div').inject(obj['div']);
-		img.setStyles({'vertical-align':'bottom', 'width':'100%', 'height':'50%'});
-		img.addEvents({'click': this.clickTo.bind(this, i), 'dblclick': this.viewCallBack.bind(this, i)});
+		if(this.options.startIndex == i) {
+		  img.setStyles({'vertical-align':'bottom', 'width':'100%', 'height':'50%', 'cursor':'pointer'});
+		  img.addEvents({'click': this.viewCallBack.bind(this, i)});
+		} else {
+		  img.setStyles({'vertical-align':'bottom', 'width':'100%', 'height':'50%'});
+		  img.addEvents({'click': this.clickTo.bind(this, i)});
+		}
 		img.inject(obj['con']);
 		
 		new Element('div').reflect({ 'img': img,
@@ -330,14 +365,25 @@ var MooFlow = new Class({
 	},
 	clickTo: function(index){
 		if(this.index == index) return;
+		prevIndex = this.index;
 		//this.aniFx.cancel();
 		if(this.sli) this.sli.set(index);
 		this.glideTo(index);
+		
 	},
 	glideTo: function(index){
+	  prevIndex = this.index;
 		this.index = index;
 		this.aniFx.start(this.aniFx.get(), index*-this.foc);
 		if(this.cap) this.cap.set('html', this.getCurrent().title);
+		if(index != prevIndex) {
+			this.loadedImages[index].setStyles({'cursor':'pointer'});
+			this.loadedImages[prevIndex].setStyles({'cursor':'default'});
+			this.loadedImages[index].removeEvents();
+			this.loadedImages[prevIndex].removeEvents();
+			this.loadedImages[index].addEvents({'click': this.viewCallBack.bind(this, index)});
+			this.loadedImages[prevIndex].addEvents({'click': this.clickTo.bind(this, prevIndex)});
+		}
 	},
 	process: function(x){
 		var z,W,H,zI=this.iL,foc=this.foc,f=this.factor,sz=this.sz,oW=this.oW,offY=this.offY,div,elh,elw;

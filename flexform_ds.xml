@@ -14,6 +14,7 @@
             <mode>
               <TCEforms>
                 <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.mode</label>
+                <onChange>reload</onChange>
                 <config>
                   <type>select</type>
                   <items type="array">
@@ -112,9 +113,22 @@
         </TCEforms>
         <type>array</type>        
           <el>
+          <autoSetup>
+              <TCEforms>
+                <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.autoSetup</label>
+                <onChange>reload</onChange>
+                <config>
+                  <type>check</type>
+                  <default>0</default>
+                  <maxitems>1</maxitems>
+                  <size>1</size>
+                </config>
+              </TCEforms>
+          </autoSetup>
            <linkMethod>
             <TCEforms>
               <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.linkMethod</label>
+              <displayCond>FIELD:autoSetup:=:0</displayCond>
               <config>
                 <type>select</type>
                 <items type="array">
@@ -135,6 +149,7 @@
           <clickOption>
             <TCEforms>
               <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.clickOption</label>
+              <displayCond>FIELD:autoSetup:=:0</displayCond>
               <config>
                 <type>select</type>
                 <items type="array">
@@ -155,6 +170,7 @@
               <reflection>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.reflection</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>input</type>
                       <eval>double</eval> 
@@ -166,6 +182,7 @@
               <heightRatio>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.heightRatio</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>input</type>
                       <eval>double</eval> 
@@ -177,6 +194,7 @@
               <offsetY>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.offsetY</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>input</type>
                       <eval>int</eval> 
@@ -188,6 +206,7 @@
               <startIndex>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.startIndex</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>input</type>
                       <eval>int</eval> 
@@ -199,6 +218,7 @@
               <interval>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.interval</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>input</type>
                       <eval>int</eval> 
@@ -210,6 +230,7 @@
               <factor>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.factor</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>input</type>
                       <eval>int</eval> 
@@ -221,6 +242,7 @@
               <bgColor>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.bgColor</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                     <type>input</type>
                       <eval>string</eval> 
@@ -232,6 +254,7 @@
               <useCaption>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.useCaption</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>check</type>
                       <maxitems>1</maxitems>
@@ -242,6 +265,7 @@
               <useResize>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.useResize</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>check</type>
                       <maxitems>1</maxitems>
@@ -252,6 +276,7 @@
               <useSlider>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.useSlider</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>check</type>
                       <maxitems>1</maxitems>
@@ -262,6 +287,7 @@
               <useWindowResize>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.useWindowResize</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>check</type>
                       <maxitems>1</maxitems>
@@ -272,6 +298,7 @@
               <useMouseWheel>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.useMouseWheel</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>check</type>
                       <maxitems>1</maxitems>
@@ -282,6 +309,7 @@
               <useKeyInput>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.useKeyInput</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>check</type>
                       <maxitems>1</maxitems>
@@ -292,6 +320,7 @@
               <useViewer>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.useViewer</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>check</type>
                       <maxitems>1</maxitems>
@@ -302,6 +331,7 @@
               <useAutoPlay>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.useAutoPlay</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>check</type>
                       <maxitems>1</maxitems>
@@ -312,6 +342,7 @@
               <useAutoPlayOnStart>
                   <TCEforms>
                     <label>LLL:EXT:cfa_mooflow/locallang_db.xml:cfa_mooflow.pi_flexform.useAutoPlayOnStart</label>
+                    <displayCond>FIELD:autoSetup:=:0</displayCond>
                     <config>
                       <type>check</type>
                       <maxitems>1</maxitems>

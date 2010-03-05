@@ -14,6 +14,7 @@
 			<label index="cfa_mooflow.pi_flexform.sheet_sPage2">Configuration</label>
 			<label index="cfa_mooflow.pi_flexform.images">Images:</label>
 			<label index="cfa_mooflow.pi_flexform.params">Parameter:</label>
+			<label index="cfa_mooflow.pi_flexform.autoSetup">Auto setup</label>
 			<label index="cfa_mooflow.pi_flexform.linkMethod">Click behavior</label>
 			<label index="cfa_mooflow.pi_flexform.clickOption">Click Option:</label>
 			<label index="cfa_mooflow.pi_flexform.useDynLoader">Dynamic loading:</label>							
@@ -53,6 +54,7 @@
 			<label index="cfa_mooflow.pi_flexform.sheet_sPage2">Konfiguration</label>
 			<label index="cfa_mooflow.pi_flexform.images">Bilder:</label>
 			<label index="cfa_mooflow.pi_flexform.params">Parameter:</label>
+			<label index="cfa_mooflow.pi_flexform.autoSetup">Auto Setup</label>
 			<label index="cfa_mooflow.pi_flexform.linkMethod">Klick Verhalten:</label>
 			<label index="cfa_mooflow.pi_flexform.clickOption">Klick Option:</label>	
 			<label index="cfa_mooflow.pi_flexform.useDynLoader">Dynamisch laden:</label>								

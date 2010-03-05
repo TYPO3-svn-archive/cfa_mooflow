@@ -1,0 +1,3 @@
+plugin.tx_cfamooflow_pi1 {
+  damcat.sorting.field = sorting
+}

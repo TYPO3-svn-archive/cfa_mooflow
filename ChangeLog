@@ -1,4 +1,27 @@
-(add new changes on top of this file)
+0.3.7
+  * Pictures of Dam Category can be display sorted by tx_dam field
+0.3.6
+  * Fix double click behavior
+0.3.5 - 09-09-12
+  * Add current mootools release (1.2.3). This will fix the IE8 reflection issue.
+  * Fix separate use of slider and resize.
+0.3.4 - 08-12-22
+  * New configuration option “Auto Setup”. With this option it is possible to run the plugin more than one time at the same page.
+0.3.3
+  * Feature request : Add new configuration option “Autoplay on Start”. If set , autoplay will start immediately after page load. 
+0.3.2
+  * Bugfix #1973 : target of internal link use '_blank' as default. Can now overwrite by configuration
+0.3.1
+  * Fix : change flexform field validation
+0.3.0
+  * New Feature : Dynamically loading of image sets without page reload (aka ajax). Only with Dam Categories available.
+0.2.4
+  * fix : missing cursor pointer if using the slider and single click is enabled.
+0.2.3
+  * Bugfix #1560 – Fix conflict with bgcolor setting to transparent related to Firefox 2
+0.2.2
+  * Add option to switch between single or double click to fire event (enlarge or linking)
+    Udate configuration to let set a hyperlink in title / description field
 
 08-07-24 Claus Fassing  <claus@fassing.eu>
 

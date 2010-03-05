@@ -61,6 +61,9 @@ var ReMooz = new Class({
 			var obj = this.element.getProperty(this.options.parse);
 			if (obj && (obj = JSON.decode(obj, this.options.parseSecure))) this.setOptions(obj);
 		}
+		//this.createOverlay('virtualBoxOverlay', 'darken');
+		//this.createFullPage('virtualBoxFullPage');
+		//this.injectOverlay(true);
 		var origin = this.options.origin;
 		this.origin = ((origin) ? $(origin) || this.element.getElement(origin) : null) || this.element;
 		this.link = this.options.link || this.element.get('href') || this.element.get('src');
@@ -107,6 +110,9 @@ var ReMooz = new Class({
 		this.box.addClass('remooz-loading');
 		ReMooz.open(this.fireEvent('onLoad'));
 		this['open' + this.options.type.capitalize()]();
+		//this.createOverlay('virtualBoxOverlay', 'darken');
+		//this.createFullPage('virtualBoxFullPage');
+		//this.injectOverlay(true);
 		return this;
 	},
 
@@ -235,7 +241,7 @@ var ReMooz = new Class({
 				'zIndex': ReMooz.options.zIndex
 			}
 		});
-
+		//this.box = this.fullpage.inject(this.box);
 		this.tweens = {
 			'box': new Fx.Morph(this.box, $merge({
 					'duration': 400,
