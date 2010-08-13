@@ -1,0 +1,96 @@
+<!-- ###STARTJS### begin -->
+<script type="text/javascript">
+              /* <![CDATA[ */
+                var myMooFlowPage = {
+                  start: function(){
+                    var mf = new MooFlow($('MooFlow'), {
+                    	reflection: ###REFLECTION###,
+                    	heightRatio: ###HEIGHTRATIO###,
+                    	offsetY: ###OFFSETY###,
+                    	startIndex: ###STARTINDEX###,
+                    	interval: ###INTERVAL###,
+                    	factor: ###FACTOR###,
+                    	bgColor: ###BGCOLOR###,
+                    	useCaption: ###USECAPTION###,
+                    	useResize: ###USERESIZE###,
+                    	useSlider: ###USESLIDER###,
+                    	useWindowResize: ###USEWINDOWRESIZE###,
+                    	useMouseWheel: ###USEMOUSEWHEEL###,
+                    	useKeyInput: ###USEKEYINPUT###,
+                    	useViewer: ###USEVIEWER###,
+                    	useAutoPlay: ###USEAUTOPLAY###,
+###ONEMPTYINITMARKER###                
+###USEAUTOPLAYONSTARTMARKER###
+###ONCLICKVIEWMARKER###
+		   });	//mf object
+###DYNLOADERMARKER###		   
+		  }, // start:function
+###LINKFUNCTIONMARKER###  
+                }; // myMooFlowPage      
+                window.addEvent('domready', myMooFlowPage.start);  
+                   /* ]]> */
+               </script>
+<!-- ###STARTJS### end -->
+<!-- ###USEAUTOPLAYONSTART### begin -->        
+                    /* Start autoPlay from onStart function */
+      			        onStart: function(){
+	      		          this.autoPlay = this.auto.periodical(this.options.interval, this);
+			                this.isAutoPlay = true;
+			                this.fireEvent('autoPlay');
+			                this.options.useAutoPlay = true;
+    			          },
+<!-- ###USEAUTOPLAYONSTART### end -->
+
+<!-- ###ONEMPTYINIT### begin -->
+'onEmptyinit': function(){
+		this.loadJSON('index.php?eID=tx_cfamooflow_pi1&damcat=###CATARRAY###&sortinstruction=###SORT###&linkmethod=###LINKMETHOD###');
+},
+<!-- ###ONEMPTYINIT### end -->
+
+<!-- ###ONCLICKVIEW### begin -->
+'onClickView': ###LINKMETHOD###
+<!-- ###ONCLICKVIEW### end -->
+
+<!-- ###LINKFUNCTION### begin -->
+link: function(result){
+                      if(result.target == "_blank") {
+                        window.open(result.href);
+                      } else {
+                        document.location = result.href;
+                      }
+	             }, // link: function
+<!-- ###LINKFUNCTION### end -->
+<!-- ###LINKFUNCTIONDETAIL### begin -->
+link: function(result){
+                      //new Element('p',{html:result.href}).inject($('col1'), 'top');
+          var req = new Request.HTML({
+            //url:'index.php?eID=mooflowDetailView&'+result.href,
+            url:'index.php?type=1337&'+result.href,
+            method: 'get',
+            onComplete: function(response) {
+            $('tx-cfamooflow-pi1_response').fade('out');
+              $('tx-cfamooflow-pi1_response').set('text', ''); 
+              $('tx-cfamooflow-pi1_response').adopt(response);
+              $('tx-cfamooflow-pi1_response').fade('in');
+            }
+         }).send();
+	             }, // link: function
+<!-- ###LINKFUNCTIONDETAIL### end -->		             
+
+<!-- ###DYNLOADER### begin -->
+$$('.loadremote').addEvent('click', function(){
+		mf.loadHTML(this.get('href'), this.get('rel'));
+		return false;
+});
+/* Dynloader */
+$$('.loadjson').addEvent('click', function(){
+		mf.loadJSON(this.get('href'));
+		$('isInitLoadCat').removeClass('isInitLoadCat');
+		var allToggler = $$('.tx_cfamooflow_pi1_loadjson');
+		allToggler.each(function(item, index){
+			item.removeClass('activeCatMarker');
+		});
+		this.getParent().addClass('activeCatMarker');
+		return false;
+});
+<!-- ###DYNLOADER### end -->

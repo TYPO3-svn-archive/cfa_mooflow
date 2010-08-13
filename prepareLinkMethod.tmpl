@@ -1,0 +1,62 @@
+<!-- ###LINKMETHOD_LINK### begin -->
+                    function(obj){
+                          myMooFlowPage.link(obj);
+                    },
+<!-- ###LINKMETHOD_LINK### end -->                              
+<!-- ###LINKMETHOD_LINK_AUTOSETUP### begin -->
+          function(obj){
+            if(obj.target == "_blank") {
+              window.open(obj.href);
+            } else {
+              document.location = obj.href;
+            }
+          }
+<!-- ###LINKMETHOD_LINK_AUTOSETUP### end -->
+<!-- ###LINKMETHOD_REMOOZ_AUTOSETUP### begin -->   
+                      function(obj){
+                              var img = new Element('img',{src:obj.src, title:obj.title, alt:obj.alt, styles:obj.coords}).setStyles({'position':'absolute','border':'none'});
+                              var link = new Element('a',{'class':'remooz-element','href':obj.href,'title':obj.title + ' - '+ obj.alt, styles:{'border':'none'}});
+                              var oMF = this;
+                              $(document.body).adopt(link.adopt(img));
+                              this.isHold = true;
+                              this.stop();
+                              var remooz = new ReMooz(link, {
+                                centered: true,
+                                resizeFactor: 0.8,
+                                origin: link.getElement('img'),
+                                      onCloseEnd: function(){
+                                      	link.destroy();
+                                      	if(oMF.options.useAutoPlay) {
+                                      		oMF.play();
+                                      		oMF.isHold = false;
+                                      	}
+                                      }
+                      	      });
+                              remooz.open();
+                      }
+<!-- ###LINKMETHOD_REMOOZ_AUTOSETUP### end -->                
+<!-- ###LINKMETHOD_REMOOZ### begin -->                     
+ function(obj){
+ 	var img = new Element('img',{src:obj.src, title:obj.title, alt:obj.alt, styles:obj.coords}).setStyles({'position':'absolute','border':'none'});
+	var link = new Element('a',{'class':'remooz-element','href':obj.href,'title':obj.title + ' - '+ obj.alt, styles:{'border':'none'}});
+	var oMF = this;
+ 	$(document.body).adopt(link.adopt(img));
+	this.isHold = true;
+	this.stop();
+	var remooz = new ReMooz(link, {
+ 		centered: true,
+	 	resizeFactor: 0.8,
+                useOverlay: ###USEOVERLAY###,
+                overlayColor: ###OVERLAYCOLOR###,
+ 		origin: link.getElement('img'),
+ 		onCloseEnd: function(){
+ 			link.destroy();
+ 			if(oMF.options.useAutoPlay) {
+ 				oMF.play();
+ 				oMF.isHold = false;
+ 			}
+ 		}
+ 	});
+ 	remooz.open();
+ },
+<!-- ###LINKMETHOD_REMOOZ### end -->
