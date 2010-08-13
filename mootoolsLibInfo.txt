@@ -1,0 +1,36 @@
+Mootools Core
+
+Core
+	All
+Native
+	All
+Class
+	All
+Element
+	All
+Utilities
+	Selectors
+	DomReady
+	JSON
+Fx
+	All
+Request
+	All
+	
+
+Mootools More
+
+Core
+	More
+	Log
+Class
+	Class.Binds
+element
+	Element.Measure
+Drag
+	Drag
+	Drag.Move
+	Slider
+Utilities
+	Assets
+

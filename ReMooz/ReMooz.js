@@ -12,12 +12,12 @@
 
 var ReMooz = new Class({
 
-	Implements: [Events, Options, Chain],
+	Implements: [Events, Options, Chain, Overlay],
 
 	options: {
 		link: null,
 		type: 'image',
-		container: null,
+		container:null,
 		className: null,
 		centered: false,
 		dragging: true,
@@ -51,7 +51,9 @@ var ReMooz = new Class({
 			var title = text.split(' :: ');
 			var head = new Element('h6', {'html': title[0]});
 			return (title[1]) ? [head, new Element('p', {'html': title[1]})] : head;
-		}
+		},
+		useOverlay: true,
+		overlayColor: 'darken'
 	},
 
 	initialize: function(element, options) {
@@ -99,6 +101,10 @@ var ReMooz = new Class({
 	open: function(e) {
 		if (this.opened) return (e) ? this.close() : this;
 		this.opened = this.loading = true;
+		if(this.options.useOverlay){
+			this.createOverlay('virtualBoxOverlay', this.options.overlayColor);
+			this.createFullPage('virtualBoxFullPage');
+		}
 		if (!this.box) this.build();
 		this.coords = this.getOriginCoordinates();
 		this.coords.opacity = this.options.opacityLoad;
@@ -106,7 +112,10 @@ var ReMooz = new Class({
 		this.tweens.box.set(this.coords);
 		this.box.addClass('remooz-loading');
 		ReMooz.open(this.fireEvent('onLoad'));
-		this['open' + this.options.type.capitalize()]();
+		this['open' + this.options.type.capitalize()]();		
+		if(this.options.useOverlay){
+			this.injectOverlay(true);
+		}
 		return this;
 	},
 
@@ -130,6 +139,9 @@ var ReMooz = new Class({
 		var vars = this.getOriginCoordinates();
 		if (this.options.opacityResize != 1) vars.opacity = this.options.opacityResize;
 		this.tweens.box.start(vars).chain(this.closeEnd.bind(this));
+		if(this.options.useOverlay){
+			this.removeOverlay();
+		}
 		return this;
 	},
 
@@ -234,8 +246,8 @@ var ReMooz = new Class({
 				'left': 0,
 				'zIndex': ReMooz.options.zIndex
 			}
-		});
-
+		}).inject(this.fullpage);
+		if(Browser.firefox) this.fullpage.setStyle('height', 'auto');
 		this.tweens = {
 			'box': new Fx.Morph(this.box, $merge({
 					'duration': 400,
@@ -285,7 +297,7 @@ var ReMooz = new Class({
 			this.tweens.fade.element.push(closer);
 		}
 		this.body = new Element('div', {'class': 'remooz-body'}).inject(this.box);
-
+		
 		var title = this.options.title || this.options.generateTitle.call(this, this.element);
 		if (title) { // thx ie6
 			var title = new Element('div', {'class': 'remooz-title'}).adopt(
@@ -315,7 +327,8 @@ var ReMooz = new Class({
 		this.drag.detach();
 
 		this.fireEvent('onBuild', this.box, this.element);
-		this.box.inject(this.element.getDocument().body);
+		//this.box.inject(this.element.getDocument().body);
+		this.box.inject(this.fullpage);
 	}
 
 });

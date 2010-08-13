@@ -60,8 +60,10 @@ var MooFlow = new Class({
 		//alert(this.MooFlow.getSize().x);
 
 		if(this.options.useWindowResize) window.addEvent('resize', this.update.bind(this, 'init'));
-		if(this.options.useMouseWheel || this.options.useSlider) this.MooFlow.addEvent('mousewheel', this.wheelTo.bind(this));
-		if(this.options.useKeyInput) document.addEvent('keydown', this.keyTo.bind(this));
+		if(!this.options.useAutoPlay){
+			if(this.options.useMouseWheel || this.options.useSlider) this.MooFlow.addEvent('mousewheel', this.wheelTo.bind(this));
+			if(this.options.useKeyInput) document.addEvent('keydown', this.keyTo.bind(this));
+		}
 		
 		this.getElements(this.MooFlow);
 	},
@@ -153,7 +155,7 @@ var MooFlow = new Class({
 		  img.addEvents({'click': this.viewCallBack.bind(this, i)});
 		} else {
 		  img.setStyles({'vertical-align':'bottom', 'width':'100%', 'height':'50%'});
-		  img.addEvents({'click': this.clickTo.bind(this, i)});
+		  	img.addEvents({'click': this.clickTo.bind(this, i)});
 		}
 		img.inject(obj['con']);
 		
@@ -242,7 +244,9 @@ var MooFlow = new Class({
 			window.removeEvent('resize', this._initResize);
 			delete this.holder, this._initResize;
 			this.MooFlow.setStyles({'position':'relative','z-index':'','top':'','left':'','width':'','height':this.MooFlow.retrieve('height')});
-			this.slider.setStyle('width',this.slider.retrieve('parentWidth'));
+			if(this.options.useSlider){
+				this.slider.setStyle('width',this.slider.retrieve('parentWidth'));
+			}
 		}
 		this.fireEvent('resized', this.isFull);
 		this.update();
@@ -283,6 +287,33 @@ var MooFlow = new Class({
 		}, this).get(url);
 	},
 	
+        getDetailView: function(obj){
+         var req = new Request.HTML({url:obj.href,
+            onSuccess: function(html) {
+              var destEl = new Element('div', {
+        	     'class': 'detailViewElement',
+        	     'text': html,
+        	     'styles': {
+        		      'font-weight': 'bold',
+        		      'margin': '1em'
+        	     }
+              }); 
+            },
+         
+            onFailure: function() {
+              var destEl = new Element('div', {
+        	     'class': 'detailViewElement',
+        	     'text': 'The request failed.',
+        	     'styles': {
+        		      'font-weight': 'bold',
+        		      'margin': '1em'
+        	     }
+              }); 
+            }
+         });
+         $('MooFlow').inject(destEl); 		
+        },
+        	
 	flowStart: function(){
 		this.inMotion = true;
 	},
@@ -308,7 +339,7 @@ var MooFlow = new Class({
 		if(this.index < this.iL) this.clickTo(this.index+1);
 	},
 	stop: function(){
-		$clear(this.autoPlay);
+		this.autoPlay = $clear(this.autoPlay);
 		this.isAutoPlay = false;
 		this.fireEvent('autoStop');
 	},
@@ -350,8 +381,8 @@ var MooFlow = new Class({
 			this.loadedImages[prevIndex].setStyles({'cursor':'default'});
 			this.loadedImages[index].removeEvents();
 			this.loadedImages[prevIndex].removeEvents();
-			this.loadedImages[index].addEvents({'click': this.viewCallBack.bind(this, index)});
-			this.loadedImages[prevIndex].addEvents({'click': this.clickTo.bind(this, prevIndex)});
+				this.loadedImages[index].addEvents({'click': this.viewCallBack.bind(this, index)});  	
+				this.loadedImages[prevIndex].addEvents({'click': this.clickTo.bind(this, prevIndex)});		
 		}
 	},
 	process: function(x){
@@ -413,6 +444,7 @@ Fx.Value = new Class({
 Element.implement({
 	reflect: function(arg){
 		i = arg.img.clone();
+		i.src = i.src;
 		if(Browser.Engine.trident){
 			i.style.filter = 'flipv progid:DXImageTransform.Microsoft.Alpha(opacity=20, style=1, finishOpacity=0, startx=0, starty=0, finishx=0, finishy='+100*arg.ref+')';
 			i.setStyles({'width':'100%', 'height':'100%'});

@@ -49,18 +49,24 @@ var MooFlow = new Class({
 		this.isAutoPlay = false;
 		this.isLoading = false;
 		this.inMotion = false;
+		this.isHold = false;
+		this.isStop = false;
+		this.isPlay = false
 		
 		this.MooFlow.addClass('mf').setStyles({
 			'overflow':'hidden',
 			'background-color':this.options.bgColor,
 			'position':'relative',
-			'height':this.MooFlow.getSize().x*this.options.heightRatio,
+			'height':this.MooFlow.getSize().x * this.options.heightRatio,
 			'opacity':0
 		});
-		
+		//alert(this.MooFlow.getSize().x);
+
 		if(this.options.useWindowResize) window.addEvent('resize', this.update.bind(this, 'init'));
-		if(this.options.useMouseWheel || this.options.useSlider) this.MooFlow.addEvent('mousewheel', this.wheelTo.bind(this));
-		if(this.options.useKeyInput) document.addEvent('keydown', this.keyTo.bind(this));
+		if(!this.options.useAutoPlay){
+			if(this.options.useMouseWheel || this.options.useSlider) this.MooFlow.addEvent('mousewheel', this.wheelTo.bind(this));
+			if(this.options.useKeyInput) document.addEvent('keydown', this.keyTo.bind(this));
+		}
 		
 		this.getElements(this.MooFlow);
 	},
@@ -147,8 +153,13 @@ var MooFlow = new Class({
 			'height': this.MooFlow.getSize().y
 		}).inject(this.MooFlow);
 		obj['con'] = new Element('div').inject(obj['div']);
-		img.setStyles({'vertical-align':'bottom', 'width':'100%', 'height':'50%'});
-		img.addEvents({'click': this.clickTo.bind(this, i), 'dblclick': this.viewCallBack.bind(this, i)});
+		if(this.options.startIndex == i) {
+		  img.setStyles({'vertical-align':'bottom', 'width':'100%', 'height':'50%', 'cursor':'pointer'});
+		  img.addEvents({'click': this.viewCallBack.bind(this, i)});
+		} else {
+		  img.setStyles({'vertical-align':'bottom', 'width':'100%', 'height':'50%'});
+		  img.addEvents({'click': this.xClickTo.bind(this, i)});
+		}
 		img.inject(obj['con']);
 		
 		new Element('div').reflect({ 'img': img,
@@ -236,7 +247,7 @@ var MooFlow = new Class({
 			window.removeEvent('resize', this._initResize);
 			delete this.holder, this._initResize;
 			this.MooFlow.setStyles({'position':'relative','z-index':'','top':'','left':'','width':'','height':this.MooFlow.retrieve('height')});
-			if(this.options.useSlider){
+			if(this.options.useSlider){ 
 				this.slider.setStyle('width',this.slider.retrieve('parentWidth'));
 			}
 		}
@@ -279,12 +290,46 @@ var MooFlow = new Class({
 		}, this).get(url);
 	},
 	
+        getDetailView: function(obj){
+         var req = new Request.HTML({url:obj.href,
+            onSuccess: function(html) {
+              var destEl = new Element('div', {
+        	     'class': 'detailViewElement',
+        	     'text': html,
+        	     'styles': {
+        		      'font-weight': 'bold',
+        		      'margin': '1em'
+        	     }
+              }); 
+            },
+         
+            onFailure: function() {
+              var destEl = new Element('div', {
+        	     'class': 'detailViewElement',
+        	     'text': 'The request failed.',
+        	     'styles': {
+        		      'font-weight': 'bold',
+        		      'margin': '1em'
+        	     }
+              }); 
+            }
+         });
+         $('MooFlow').inject(destEl); 		
+        },
+        	
 	flowStart: function(){
 		this.inMotion = true;
 	},
 	
 	flowComplete: function(){
+		//var tempEl;
 		this.inMotion = false;
+		/*
+		for(var i = 0; i < this.index; i++){
+				tempEl = this.master.images.shift();
+				this.master.images.push(tempEl);
+		}
+		*/
 	},
 	
 	viewCallBack: function(index){
@@ -299,21 +344,26 @@ var MooFlow = new Class({
 	},
 	prev: function(){
 		if(this.index > 0) this.clickTo(this.index-1);
+		//console.log('prev');
 	},
 	next: function(){
 		if(this.index < this.iL) this.clickTo(this.index+1);
+		//console.log('next');
 	},
 	stop: function(){
-		$clear(this.autoPlay);
+		this.autoPlay = $clear(this.autoPlay);
 		this.isAutoPlay = false;
 		this.fireEvent('autoStop');
+		//console.log('stop');
 	},
 	play: function(){
 		this.autoPlay = this.auto.periodical(this.options.interval, this);
 		this.isAutoPlay = true;
 		this.fireEvent('autoPlay');
+		//console.log('play');
 	},
 	auto: function(){
+	  //console.log('auto');
 		if(this.index < this.iL) this.next();
 		else if(this.index == this.iL) this.clickTo(0);
 	},
@@ -329,18 +379,65 @@ var MooFlow = new Class({
 		e.stop().preventDefault();
 	},
 	clickTo: function(index){
+	   //console.log('clickTo');
 		if(this.index == index) return;
+		prevIndex = this.index;
 		//this.aniFx.cancel();
 		if(this.sli) this.sli.set(index);
 		this.glideTo(index);
 	},
+	xClickTo: function(index){
+	  if(this.options.useAutoPlay){
+			this.stop();
+			this.isPlay = true;
+		}
+		//console.log('xClickTo');
+    if(this.index == index) return;
+		prevIndex = this.index;
+		if(this.sli) this.sli.set(index);
+		this.glideTo(index);
+	},
 	glideTo: function(index){
+	  var oMF = this;
+	  prevIndex = this.index;
 		this.index = index;
 		this.aniFx.start(this.aniFx.get(), index*-this.foc);
 		if(this.cap) this.cap.set('html', this.getCurrent().title);
+		if(index != prevIndex) {
+			this.loadedImages[index].setStyles({'cursor':'pointer'});
+			this.loadedImages[prevIndex].setStyles({'cursor':'default'});
+			this.loadedImages[index].removeEvents();
+			this.loadedImages[prevIndex].removeEvents();
+
+			if(this.options.useAutoPlay){
+				this.loadedImages[index].addEvents({
+  					'click': this.viewCallBack.bind(this, index),
+  					'mouseover': function(){
+  					        oMF.stop();
+  					        oMF.isPlay = false;
+    					},
+    					'mouseout': function(){
+    						if(!oMF.isHold) {
+    							if(oMF.isPlay) {
+    								return;
+    							} else {
+        							oMF.play();
+        							//console.log('mouseout');
+        							oMF.isPlay = true;
+        						}
+        					}
+    					}
+  				});
+  				this.loadedImages[prevIndex].addEvents({'click': this.xClickTo.bind(this, prevIndex)});
+  			} else {
+				this.loadedImages[index].addEvents({'click': this.viewCallBack.bind(this, index)});
+				this.loadedImages[prevIndex].addEvents({'click': this.clickTo.bind(this, prevIndex)});
+  			}
+			
+		}
 	},
 	process: function(x){
-		var z,W,H,zI=this.iL,foc=this.foc,f=this.factor,sz=this.sz,oW=this.oW,offY=this.offY,div,elh,elw;
+		var z,W,H,zI=this.iL,foc=this.foc,f=this.factor,sz=this.sz,oW=this.oW,offY=this.offY,div,elh,elw,oH=this.MooFlow.getSize().y;
 		this.master.images.each(function(el){
 			div = el.div.style;
 			elw = el.width;
@@ -352,7 +449,7 @@ var MooFlow = new Class({
 					W = round(elw * H / elh);
 					if(H >= elw * 0.5) {W = round(f / z * sz);}
 					div.left = round(((x / z * sz) + sz) - (f * 0.5) / z * sz) + 'px';
-					div.top = round(oW * 0.4 - H) + offY + 'px';
+					div.top = round((oH * 0.5) - (H * 0.5)) + offY + 'px';
 				}	
 				el.con.style.height = H*2 + 'px';		
 				div.width = W + 'px';
@@ -398,7 +495,6 @@ Fx.Value = new Class({
 Element.implement({
 	reflect: function(arg){
 		i = arg.img.clone();
-		i.src = i.src;
 		if(Browser.Engine.trident){
 			i.style.filter = 'flipv progid:DXImageTransform.Microsoft.Alpha(opacity=20, style=1, finishOpacity=0, startx=0, starty=0, finishx=0, finishy='+100*arg.ref+')';
 			i.setStyles({'width':'100%', 'height':'100%'});
@@ -432,4 +528,4 @@ window.addEvent('domready', function(){
 	$$('.MooFlowieze').each(function(mooflow){
 		new MooFlow(mooflow);
 	});
-});
+}); 
