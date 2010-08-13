@@ -24,7 +24,7 @@
 
 require_once(PATH_tslib.'class.tslib_pibase.php');
 
-
+require_once(t3lib_extMgm::extPath('cfa_mooflow') . 'libs/class.FlexformConfig.php');
 
 /**
  * Plugin 'MooFlow V0.2 integration' for the 'cfa_mooflow' extension.
@@ -40,10 +40,11 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 	var $filePath 	   = '';
 	var $uploadPath	   = 'uploads/tx_cfamooflow/';
 	var $webPath       = 'typo3conf/ext/cfa_mooflow/res/';
+	var $extPath       = '';
 	var $pi_checkCHash = true;
-	var $linkMethod    = 'remooz';
 	var $catArray = Array();
 	var $catCaptionArray = Array();
+	var $template = array();
 
 	/**
 	 * The main method of the PlugIn
@@ -53,153 +54,136 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 	 * @return	The content that is displayed on the website
 	 */
 	function main($content,$conf)	{
+		$this->conf=$conf;
 		$this->pi_setPiVarDefaults();
 		$this->pi_loadLL();
 		$this->pi_USER_INT_obj=1;	// Configuring so caching is not expected. This value means that no cHash params are ever set. We do this, because it's a USER_INT object!
 		$this->filePath = dirname(t3lib_div::getIndpEnv("SCRIPT_FILENAME")).'/';
-		$this->initFlexformAndConfig($conf);
-		if(!empty($this->conf['useDynLoader']) && $this->conf['mode']=='DAMCAT') {
+		$this->extPath = t3lib_extMgm::extPath("cfa_mooflow");
+		$this->pi_initPIflexForm();
+		// Other generic settings are fetched
+		$this->conf['pidList'] = $this->cObj->data['pages'];
+		$this->conf['recursive'] = $this->cObj->data['recursive'];
+		$this->damcatOrderBy = addslashes($conf['damcat.']['sorting.']['field']);
+		$this->mootoolsLibCoreEnable = $conf['mootoolslib.']['core.']['enable'];
+		$this->mootoolsLibMoreEnable = $conf['mootoolslib.']['more.']['enable'];
+		$this->oConfig = new FlexformConfig($this);
+		$this->damcatOrderBy = addslashes($conf['damcat.']['sorting.']['field']);
+		
+		/* JS Templating begin */
+		$this->templatePrepareLinkMethod = $this->cObj->fileResource("EXT:cfa_mooflow/templates/prepareLinkMethod.tmpl");
+		$this->templateStartJS = $this->cObj->fileResource("EXT:cfa_mooflow/templates/startJS.tmpl");
+		$this->templateAutoSetupJS = $this->cObj->fileResource("EXT:cfa_mooflow/templates/autosetupJS.tmpl");
+
+		$this->template["startjs"]=$this->cObj->getSubpart($this->templateStartJS,'###STARTJS###');
+		if(($this->oConfig->useDynLoader) && ($this->oConfig->mode == 'DAMCAT')) {
+			$this->template["onEmptyInit"]=$this->cObj->getSubpart($this->templateStartJS,'###ONEMPTYINIT###');
+			$this->template["dynloader"]=$this->cObj->getSubpart($this->templateStartJS,'###DYNLOADER###');
+		} else {
+			$this->template["onEmptyInit"]='';
+			$this->template["dynloader"] = '';
+		}
+
+		if($this->oConfig->useAutoPlayOnStart) {
+			$this->template["useAutoPlayOnStart"]=$this->cObj->getSubpart($this->templateStartJS,'###USEAUTOPLAYONSTART###');
+		} else {
+			$this->template["useAutoPlayOnStart"]='';
+		}
+
+		if($this->oConfig->linkMethod == "link") {
+			$this->template["linkFunction"]=$this->cObj->getSubpart($this->templateStartJS,'###LINKFUNCTION###');
+		} elseif ($this->oConfig->linkMethod == "detailView") {
+			$this->template["linkFunction"]=$this->cObj->getSubpart($this->templateStartJS,'###LINKFUNCTIONDETAIL###');
+		} else {
+			$this->template["linkFunction"]= '';
+		}
+
+		$this->template["onClickView"]=$this->cObj->getSubpart($this->templateStartJS,'###ONCLICKVIEW###');
+
+		/* AutoSetup Subparts */
+		$this->template["autoSetup"]=$this->cObj->getSubpart($this->templateAutoSetupJS,'###AUTOSETUPJS###');
+
+		/* JS Templating end */
+
+		if(($this->oConfig->useDynLoader) && ($this->oConfig->mode=='DAMCAT')) {
 			/* Call this function only to get the categories without return code */
 			$this->getDamCatImages();
 		}
+		
+		/* Renew StartJS */
+
+		$onClickViewMarkerArray['###LINKMETHOD###'] = $this->prepareLinkMethod();
+		$catMarkerArray['###CATARRAY###'] = $this->catArray[0];
+		$catMarkerArray['###SORT###'] = $this->damcatOrderBy;
+		$catMarkerArray['###LINKMETHOD###'] = $this->oConfig->linkMethod;
+		/*
+		 $configArray = $this->oConfig->getConfigArray();
+		 foreach ($configArray as $marker) {
+		 $defaultMarkerArray['###'.strtoupper($marker).'###'] = $this->pi_getLL($marker);
+		 }
+		 */
+		$defaultMarkerArray['###REFLECTION###'] = $this->oConfig->reflection;
+		$defaultMarkerArray['###HEIGHTRATIO###'] = $this->oConfig->heightRatio;
+		$defaultMarkerArray['###OFFSETY###'] = $this->oConfig->offsetY;
+		$defaultMarkerArray['###STARTINDEX###'] = $this->oConfig->startIndex;
+		$defaultMarkerArray['###INTERVAL###'] = $this->oConfig->interval;
+		$defaultMarkerArray['###FACTOR###'] = $this->oConfig->factor;
+		$defaultMarkerArray['###BGCOLOR###'] = $this->oConfig->bgColor;
+		$defaultMarkerArray['###USECAPTION###'] = $this->oConfig->useCaption;
+		$defaultMarkerArray['###USERESIZE###'] = $this->oConfig->useResize;
+		$defaultMarkerArray['###USESLIDER###'] = $this->oConfig->useSlider;
+		$defaultMarkerArray['###USEWINDOWRESIZE###'] = $this->oConfig->useWindowResize;
+		$defaultMarkerArray['###USEMOUSEWHEEL###'] = $this->oConfig->useMouseWheel;
+		$defaultMarkerArray['###USEKEYINPUT###'] = $this->oConfig->useKeyInput;
+		$defaultMarkerArray['###USEVIEWER###'] = $this->oConfig->useViewer;
+		$defaultMarkerArray['###USEAUTOPLAY###'] = $this->oConfig->useAutoPlay;
+
+		
+		$defaultMarkerArray['###USEAUTOPLAYONSTARTMARKER###'] = $this->template["useAutoPlayOnStart"];
+		#$defaultMarkerArray['###ONEMPTYINITMARKER###'] = $this->template["onEmptyInit"];
+		$defaultMarkerArray['###ONEMPTYINITMARKER###'] = $this->cObj->substituteMarkerArrayCached($this->template["onEmptyInit"],$catMarkerArray);
+		$defaultMarkerArray['###DYNLOADERMARKER###'] = $this->template["dynloader"];
+		$defaultMarkerArray['###ONCLICKVIEWMARKER###'] = $this->cObj->substituteMarkerArrayCached($this->template["onClickView"],$onClickViewMarkerArray);
+		//$defaultMarkerArray['###ONCLICKVIEWMARKER###'] = '';
+		$defaultMarkerArray['###LINKFUNCTIONMARKER###'] = $this->template["linkFunction"];
+		//$defaultMarkerArray['###LINKFUNCTIONMARKER###'] = '';
 
 
-		$startJS = '
-              <script type="text/javascript">
-              /* <![CDATA[ */
-                var myMooFlowPage = {
-                  start: function(){
-                    var mf = new MooFlow($(\'MooFlow\'), {';
-		$startJS .= "\n";
-		if(!empty($this->conf['reflection'])) {
-			$reflection = $this->conf['reflection'];
-			$reflection = substr($reflection, 0, -1);
-			$startJS .= 'reflection: '.$reflection.','."\n";
-		}
-		if(!empty($this->conf['heightRatio'])) {
-			$heightRatio = $this->conf['heightRatio'];
-			$startJS .= 'heightRatio: '.$heightRatio.','."\n";
-		}
-		if(!empty($this->conf['offsetY'])) {
-			$offsetY = $this->conf['offsetY'];
-			$startJS .= 'offsetY: '.$offsetY.','."\n";
-		}
-		if(!empty($this->conf['startIndex'])) {
-			$startIndex = $this->conf['startIndex'];
-			$startJS .= 'startIndex: '.$startIndex.','."\n";
-		}
-		if(!empty($this->conf['interval'])) {
-			$interval = $this->conf['interval'];
-			$startJS .= 'interval: '.$interval.','."\n";
-		}
-		if(!empty($this->conf['factor'])) {
-			$factor = $this->conf['factor'];
-			$startJS .= 'factor: '.$factor.','."\n";
-		}
-		if(!empty($this->conf['bgColor'])) {
-			$bgColor = $this->conf['bgColor'];
-			$startJS .= 'bgColor: "'.$bgColor.'",'."\n";
-		}
-		if(!empty($this->conf['useCaption'])) {
-			$startJS .= 'useCaption: true,'."\n";
-		}
-		if(!empty($this->conf['useResize'])) {
-			$startJS .= 'useResize: true,'."\n";
-		}
-		if(!empty($this->conf['useSlider'])) {
-			$startJS .= 'useSlider: true,'."\n";
-		}
-		if(!empty($this->conf['useWindowResize'])) {
-			$startJS .= 'useWindowResize: true,'."\n";
-		}
-		if(!empty($this->conf['useMouseWheel'])) {
-			$startJS .= 'useMouseWheel: true,'."\n";
-		}
-		if(!empty($this->conf['useKeyInput'])) {
-			$startJS .= 'useKeyInput: true,'."\n";
-		}
-		if(!empty($this->conf['useViewer'])) {
-			$startJS .= 'useViewer: true,'."\n";
-		}
-		if(!empty($this->conf['useAutoPlay'])) {
-			$startJS .= 'useAutoPlay: true,'."\n";
-		}
-		$startJS .=
-                						'\'onEmptyinit\': function(){
-                              this.loadJSON(\'index.php?eID=tx_cfamooflow_pi1&damcat='.$this->catArray[0].'\');
-                            },'."\n";
-		/* Cut off last char if needed */
-		// $startJS = substr($startJS, 0, -1);
+		$startJS = $this->cObj->substituteMarkerArrayCached($this->template["startjs"],$defaultMarkerArray);
 
-		/* Callback function */
-		if($this->linkMethod == "link") {
-			$startJS .= '
-                            \'onClickView\': function(obj){
-                                  myMooFlowPage.link(obj);
-                              }  
-                            });
-                              },';            
-		} elseif($this->linkMethod == "remooz") {
-			$startJS .= '
-                              \'onClickView\': function(obj){
-                                      var img = new Element(\'img\',{src:obj.src, title:obj.title, alt:obj.alt, styles:obj.coords}).setStyles({\'position\':\'absolute\',\'border\':\'none\'});
-                                      var link = new Element(\'a\',{\'class\':\'remooz-element\',\'href\':obj.href,\'title\':obj.title + \' - \'+ obj.alt, styles:{\'border\':\'none\'}});
-                                      $(document.body).adopt(link.adopt(img));
-                                      var remooz = new ReMooz(link, {
-                                  centered: true,
-                                              resizeFactor: 0.8,
-                                  origin: link.getElement(\'img\'),
-                                              onCloseEnd: function(){link.destroy()}
-                              });
-                                      remooz.open();
-                              }
-                });
-                            $$(\'.loadremote\').addEvent(\'click\', function(){
-                                    mf.loadHTML(this.get(\'href\'), this.get(\'rel\'));
-                                    return false;
-                            });
-                            /* Dynloader */
-                            $$(\'.loadjson\').addEvent(\'click\', function(){
-                              mf.loadJSON(this.get(\'href\'));
-                              $(\'isInitLoadCat\').removeClass(\'isInitLoadCat\');
-                              var allToggler = $$(\'.tx_cfamooflow_pi1_loadjson\');
-                              allToggler.each(function(item, index){
-                                      item.removeClass(\'activeCatMarker\');
-                              });
-                              this.getParent().addClass(\'activeCatMarker\');
-                              return false;
-                            });
-                          },';
+		if(!empty($GLOBALS['TSFE']->additionalHeaderData['mooflowJS'])){
+		 $this->oConfig->isLoaded = True;
+		 $this->oConfig->autoSetup = 1;
+		 $content = $this->buildHtmlOutput();
+		 return $this->pi_wrapInBaseClass($content);
 		}
-		$startJS .= '
-                              link: function(result){
-                                if(result.target == "_blank") {
-                                  window.open(result.href);
-                                } else {
-                                  document.location = result.href;
-                                }
-	                      }
-                            };
-                        
-                          window.addEvent(\'domready\', myMooFlowPage.start);
-                          
-                          /* ]]> */
-                          </script>';
 
-		$GLOBALS['TSFE']->additionalHeaderData['mooflowCoreJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'mootools-1.2-core.js"></script>';
-		$GLOBALS['TSFE']->additionalHeaderData['mooflowMoreJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'mootools-1.2-more.js"></script>';
-		if($this->clickOption == "single") {
+		if(($this->oConfig->autoSetup) && (!$this->oConfig->isLoaded)) {
+			unset($this->oConfig->useDynLoader);
+			$autoSetupContent = $this->cObj->substituteMarkerArrayCached($this->template["autoSetup"],$defaultMarkerArray);
+			t3lib_div::writeFile($this->extPath.'res/MooFlow.autoSetup.js',$autoSetupContent);
+		}
+
+
+		$GLOBALS['TSFE']->additionalHeaderData['mooflowCoreJS'] = ($this->mootoolsLibCoreEnable) ? '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'mootools-1.2.4-core.js"></script>' : '';
+		$GLOBALS['TSFE']->additionalHeaderData['mooflowMoreJS'] = ($this->mootoolsLibMoreEnable) ? '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'mootools-1.2.4.4-more.js"></script>' : '';
+		if(($this->oConfig->clickOption == "single") && (!$this->oConfig->autoSetup))  {
 			$GLOBALS['TSFE']->additionalHeaderData['mooflowJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'MooFlow.Mod.js"></script>';
+		} elseif ($this->oConfig->autoSetup) {
+			$GLOBALS['TSFE']->additionalHeaderData['mooflowJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'MooFlow.autoSetup.js"></script>';
 		} else {
 			$GLOBALS['TSFE']->additionalHeaderData['mooflowJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'MooFlow.js"></script>';
 		}
 		$GLOBALS['TSFE']->additionalHeaderData['mooflowCSS'] = '<link rel="stylesheet" type="text/css" href="'.$this->webPath.'MooFlow.css" />';
-		if($this->linkMethod == "remooz") {
+
+		if($this->oConfig->linkMethod == "remooz") {
+			$GLOBALS['TSFE']->additionalHeaderData['moordCoreJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'moo.rd_v1.3.2.js"></script>';
 			$GLOBALS['TSFE']->additionalHeaderData['remoozCSS'] = '<link rel="stylesheet" type="text/css" href="'.$this->webPath.'ReMooz/ReMooz.css" />';
 			$GLOBALS['TSFE']->additionalHeaderData['remoozJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'ReMooz/ReMooz.js"></script>';
 		}
-		$GLOBALS['TSFE']->additionalHeaderData['startmooflow'] = $startJS;
-
+		if(!$this->oConfig->autoSetup) {
+			$GLOBALS['TSFE']->additionalHeaderData['startmooflow'] = $startJS;
+		}
 		$content = $this->buildHtmlOutput();
 
 		return $this->pi_wrapInBaseClass($content);
@@ -211,8 +195,8 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 	 * @return  HTML Code
 	 */
 	function buildHtmlOutput() {
-		if(!empty($this->conf['params'])) {
-			$parapairs = explode("\n",$this->conf['params']);
+		if(!empty($this->oConfig->params)) {
+			$parapairs = explode("\n",$this->oConfig->params);
 			foreach($parapairs as $item) {
 				/* Reset the arrays */
 				unset($attrstr);
@@ -232,7 +216,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 				}
 				/* url fix */
 				if(!empty($attr['href'])) {
-					if(substr($attr['href'], 0, 1) != "/") {
+					if((substr($attr['href'], 0, 1) != "/") && (substr($attr['href'], 0, 1) != "u")) {
 						$attr['href'] = 'http://'.$attr['href'];
 					}
 				}
@@ -241,17 +225,22 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 		}
 
 		$hashnum = 1;
-		$html = '
+		if(!$this->oConfig->autoSetup) {
+			$html = '
             <div id="MooFlow" class="mf">';
+		} else {
+			$html = '
+            <div id="MooFlow" class="MooFlowieze mf">';
+		}
 		/* DynLoader */
-		if(!empty($this->conf['useDynLoader']) && $this->conf['mode']=='DAMCAT') {
+		if(($this->oConfig->useDynLoader) && ($this->oConfig->mode=='DAMCAT')) {
 			$html .= '</div><div id="tx_cfamooflow_pi1_dynLoaderControl">';
 			$countCat = 0;
 			foreach($this->catArray as $cat) {
 				if($countCat == 0) {
-					$html .= '<div id="isInitLoadCat" class="tx_cfamooflow_pi1_loadjson isInitLoadCat"><a class="loadjson" href="index.php?eID=tx_cfamooflow_pi1&amp;damcat='.$cat.'" >'.$this->catCaptionArray[$cat].'</a></div>';
+                $html .= '<div id="isInitLoadCat" class="tx_cfamooflow_pi1_loadjson isInitLoadCat"><a class="loadjson" href="index.php?eID=tx_cfamooflow_pi1&amp;damcat='.$cat.'&amp;sortinstruction='.$this->damcatOrderBy.'&amp;linkmethod='.$this->oConfig->linkMethod.'" >'.$this->catCaptionArray[$cat].'</a></div>';
 				} else {
-					$html .= '<div class="tx_cfamooflow_pi1_loadjson"><a class="loadjson" href="index.php?eID=tx_cfamooflow_pi1&amp;damcat='.$cat.'" >'.$this->catCaptionArray[$cat].'</a></div>';
+        	$html .= '<div class="tx_cfamooflow_pi1_loadjson"><a class="loadjson" href="index.php?eID=tx_cfamooflow_pi1&amp;damcat='.$cat.'&amp;sortinstruction='.$this->damcatOrderBy.'&amp;linkmethid='.$this->oConfig->linkMethod.'" >'.$this->catCaptionArray[$cat].'</a></div>';
 				}
 				++$countCat;
 			}
@@ -260,150 +249,28 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 
 		} else {
 			 
-			if ($this->conf['mode']=='MANUAL') {
+			if ($this->oConfig->mode=='MANUAL') {
 				$imgs = $this->getManualImages($attrHash,$hashnum);
-			} elseif ($this->conf['mode'] == 'DIRECTORY') {
+			} elseif ($this->oConfig->mode == 'DIRECTORY') {
 				$imgs = $this->getDirectoryImages();
-			} elseif ($this->conf['mode']=='DAM') {
+			} elseif ($this->oConfig->mode=='DAM') {
 				$imgs = $this->getDamImages();
-			} elseif ($this->conf['mode']=='DAMCAT') {
+			} elseif ($this->oConfig->mode=='DAMCAT') {
 				$imgs = $this->getDamCatImages();
 			}
 
 			$html .= $imgs.'</div>';
 		}
+		// TODO if abfrage
+		$html.= '<div id="tx-cfamooflow-pi1_response" style="visibility=hidden;">&nbsp;</div>';
 		return $html;
 	}
 
-	/**
-	 * Initializes Flexform values and TS, priority to FlexForms as they are more specific to the element
-	 *
-	 * @param	[type]		$conf: ...
-	 * @return	[none]		none
-	 * @param:	[array]		$conf: TSconf array
-	 */
-	function initFlexformAndConfig($conf) {
-		// Initialize the FlexForms array
-		$this->pi_initPIflexForm();
-
-		// Images
-		$ffimages = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'defaultmode','sPage1');
-		if(!empty($ffimages)) $this->conf['images'] = $ffimages;
-
-		// Directory
-		$ffdirectory = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'directorymode','sPage1');
-		if(!empty($ffdirectory)) $this->conf['directory'] = $ffdirectory;
-
-		$ffdModeImageTitle = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'dModeImageTitle','sPage1');
-		if(!empty($ffdModeImageTitle)) $this->conf['dModeImageTitle'] = $ffdModeImageTitle;
-
-		$ffdModeImageAlt = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'dModeImageAlt','sPage1');
-		if(!empty($ffdModeImageAlt)) $this->conf['dModeImageAlt'] = $ffdModeImageAlt;
-
-		// Image Parameter
-		$ffparams = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'params','sPage1');
-		if(!empty($ffparams)) $this->conf['params'] = $ffparams;
-
-		// Mode selection
-		$ffmode = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'mode','sPage1');
-		if(!empty($ffmode)) $this->conf['mode'] = $ffmode;
-
-		// Get DamCat
-		$ffmodedamcat = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'modedamcat','sPage1');
-		if(!empty($ffmodedamcat)) $this->conf['modedamcat'] = $ffmodedamcat;
-
-		$ffrecursivedamcat = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'recursivedamcat','sPage1');
-		if(!empty($ffrecursivedamcat)) $this->conf['recursivedamcat'] = $ffrecursivedamcat;
-
-		//Reflection
-		$ffreflection = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'reflection','sPage2');
-		if(!empty($ffreflection)) $this->conf['reflection'] = $ffreflection;
-
-		//Doubleclick behavior
-		$fflinkMethod = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'linkMethod','sPage2');
-		if(!empty($fflinkMethod)) $this->linkMethod = $fflinkMethod;
-
-		//Click Option
-		$ffclickOption = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'clickOption','sPage2');
-		if(!empty($ffclickOption)) $this->clickOption = $ffclickOption;
-
-		//DynLoader
-		$ffuseDynLoader = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useDynLoader','sPage1');
-		if(!empty($ffuseDynLoader)) $this->conf['useDynLoader'] = $ffuseDynLoader;
-
-		//heightRatio
-		$ffheightRatio = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'heightRatio','sPage2');
-		if(!empty($ffheightRatio)) $this->conf['heightRatio'] = $ffheightRatio;
-
-		//offsetY
-		$ffoffsetY = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'offsetY','sPage2');
-		if(!empty($ffoffsetY)) $this->conf['offsetY'] = $ffoffsetY;
-
-		//startIndex
-		$ffstartIndex = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'startIndex','sPage2');
-		if(!empty($ffstartIndex)) $this->conf['startIndex'] = $ffstartIndex;
-
-		//interval
-		$ffinterval = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'interval','sPage2');
-		if(!empty($ffinterval)) $this->conf['interval'] = $ffinterval;
-
-		//factor
-		$fffactor = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'factor','sPage2');
-		if(!empty($fffactor)) $this->conf['factor'] = $fffactor;
-
-		//bgColor
-		$ffbgColor = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'bgColor','sPage2');
-		if (preg_match("/Firefox\/2/i", $_SERVER['HTTP_USER_AGENT']) && $ffbgColor == 'transparent') {
-			$ffbgColor = 'rgba(0,0,0,0)';
-		}
-		if(!empty($ffbgColor)) $this->conf['bgColor'] = $ffbgColor;
-
-		//useCaption
-		$ffuseCaption = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useCaption','sPage2');
-		if(!empty($ffuseCaption)) $this->conf['useCaption'] = $ffuseCaption;
-
-		//useResize
-		$ffuseResize = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useResize','sPage2');
-		if(!empty($ffuseResize)) $this->conf['useResize'] = $ffuseResize;
-
-		//useSlider
-		$ffuseSlider = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useSlider','sPage2');
-		if(!empty($ffuseSlider)) $this->conf['useSlider'] = $ffuseSlider;
-
-		//useWindowResize
-		$ffuseWindowResize = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useWindowResize','sPage2');
-		if(!empty($ffuseWindowResize)) $this->conf['useWindowResize'] = $ffuseWindowResize;
-
-		//useMouseWheel
-		$ffuseMouseWheel = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useMouseWheel','sPage2');
-		if(!empty($ffuseMouseWheel)) $this->conf['useMouseWheel'] = $ffuseMouseWheel;
-
-		//useKeyInput
-		$ffuseKeyInput = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useKeyInput','sPage2');
-		if(!empty($ffuseKeyInput)) $this->conf['useKeyInput'] = $ffuseKeyInput;
-
-		//useViewer
-		$ffuseViewer = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useViewer','sPage2');
-		if(!empty($ffuseViewer)) $this->conf['useViewer'] = $ffuseViewer;
-
-		//useAutoPlay
-		$ffuseAutoPlay = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'useAutoPlay','sPage2');
-		if(!empty($ffuseAutoPlay)) $this->conf['useAutoPlay'] = $ffuseAutoPlay;
-
-
-
-
-		// Other generic settings are fetched
-		$this->conf['pidList'] = $this->cObj->data['pages'];
-		$this->conf['recursive'] = $this->cObj->data['recursive'];
-
-		return;
-	}
 
 	function getManualImages($attrHash,$hashnum) {
-		$images = explode(",",$this->conf['images']);
+		$images = explode(",",$this->oConfig->images);
 		foreach($images as $image) {
-			if($this->linkMethod == "remooz") {
+			if($this->oConfig->linkMethod == "remooz") {
 				if($attrHash[0]) {
 					/* If there an override for all picture, use only this */
 					$hashnum = 0;
@@ -411,7 +278,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 				$imgs .= '<a href="'.$this->uploadPath.$image.'" rel="image" target="_blank">';
 				$imgs .= '<img src="'.$this->uploadPath.$image.'" alt="'.$attrHash[$hashnum]['alt'].'" longdesc="" title="'.$attrHash[$hashnum]['title'].'" />';
 				$imgs .= '</a>';
-			} elseif($this->linkMethod == "link") {
+			} elseif($this->oConfig->linkMethod == "link" || $this->oConfig->linkMethod == "detailView") {
 				if(empty($attrHash[$hashnum]['href'])) {
 					$href = $this->uploadPath.$image;
 				} else {
@@ -434,23 +301,23 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 
 	}
 	function getDirectoryImages() {
-		if (is_dir($this->conf['directory'])) {
+		if (is_dir($this->oConfig->directory)) {
 			$images = array();
-			$images = $this->getFiles($this->conf['directory']);
+			$images = $this->getFiles($this->oConfig->directory);
 			 
 			// add the images
 			foreach ($images as $key=>$value) {
-				$path = $this->conf['directory'].$value;
+				$path = $this->oConfig->directory.$value;
 
 				$imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
 				$imgs .= '<img src="'.$path.'" ';
-				if(!empty($this->conf['dModeImageTitle'])) {
-					$imgs .= 'title="'.$this->conf['dModeImageTitle'].'" ';
+				if(!empty($this->oConfig->dModeImageTitle)) {
+					$imgs .= 'title="'.$this->oConfig->dModeImageTitle.'" ';
 				} else {
 					$imgs .= 'title=" " ';
 				}
-				if(!empty($this->conf['dModeImageAlt'])) {
-					$imgs .= 'alt="'.$this->conf['dModeImageAlt'].'" ';
+				if(!empty($this->oConfig->dModeImageAlt)) {
+					$imgs .= 'alt="'.$this->oConfig->dModeImageAlt.'" ';
 				} else {
 					$imgs .= 'alt=" " ';
 				}
@@ -539,16 +406,22 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 			 * Get link from instructions field if is available and linkMethod is "link"
 			 * Elsewhere use picture path as link
 			 */
-			if($this->linkMethod == "link" && $row['instructions']) {
-				/* url fix */
-				if(substr($row['instructions'], 0, 1) != "/") {
-					$row['instructions'] = 'http://'.$row['instructions'];
+			if(($this->oConfig->linkMethod == "link" || $this->oConfig->linkMethod == "detailView") && $row['instructions']) {
+				$instructions = explode(";",$row['instructions']);
+				if(!empty($instructions[1])) {
+					$target = $instructions[1];
+				} else {
+					$target = "_blank";
 				}
-				$imgs .= '<a href="'.$row['instructions'].'" rel="image" target="_blank">';
+				/* url fix */
+				if((substr($instructions[0], 0, 1) != "/") && (substr($instructions[0], 0, 1) != "i")) {
+					$instructions[0] = 'http://'.$instructions[0];
+				}
+				$imgs .= '<a href="'.$instructions[0].'" rel="image" target="'.$target.'">';
 			} else {
 				$imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
 			}
-			$imgs .= '<img src="'.$path.'" alt="'.$row['description'].'" title="'.$row['title'].'" />';
+			$imgs .= '<img src="'.$path.'" alt="'.strtr(htmlspecialchars($row['description']), array("\r\n" => '<br />', "\r" => '<br />', "\n" => '<br />')).'" title="'.strtr(htmlspecialchars($row['title']), array("\r\n" => '<br />', "\r" => '<br />', "\n" => '<br />')).'" />';
 			$imgs .= '</a>';
 		}
 		return($imgs);
@@ -557,9 +430,9 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 	function getDamCatImages() {
 
 		// add image
-		$list= str_replace('tx_dam_cat_', '',$this->conf['modedamcat']);
+		$list= str_replace('tx_dam_cat_', '',$this->oConfig->modedamcat);
 
-		$listRecursive = $this->getDamCatRecursive($list,$this->conf['recursivedamcat']);
+		$listRecursive = $this->getDamCatRecursive($list,$this->oConfig->recursivedamcat);
 		$listArray = explode(',',$listRecursive);
 		$files = Array();
 		foreach($listArray as $cat) {
@@ -567,14 +440,14 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 			$fields = 'tx_dam.uid,tx_dam.title,tx_dam.description,tx_dam.file_name,tx_dam.file_path,tx_dam.instructions';
 			$tables = 'tx_dam,tx_dam_mm_cat';
 			$temp_where = 'tx_dam.deleted = 0 AND tx_dam.file_mime_type=\'image\' AND tx_dam.hidden=0 AND tx_dam_mm_cat.uid_foreign='.$cat.' AND tx_dam_mm_cat.uid_local=tx_dam.uid';
-			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $tables, $temp_where);
+		        $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $tables, $temp_where, '', 'tx_dam.' . $this->damcatOrderBy);
 			 
 			while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)){
 				$files[$row['uid']] = $row; # just add the image to an array
 			}
 
 			/* The dynLoader need the cat title to set this as caption */
-			if(!empty($this->conf['useDynLoader'])) {
+			if($this->oConfig->useDynLoader) {
 				array_push($this->catArray,$cat);
 				$field = 'title';
 				$table = 'tx_dam_cat';
@@ -587,7 +460,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 		}
 
 		/* If DynLoader is active, just get the categories and return */
-		if(!empty($this->conf['useDynLoader'])) {
+		if($this->oConfig->useDynLoader) {
 			return;
 		}
 
@@ -595,16 +468,22 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 		foreach ($files as $key=>$row) {
 			$path =  $row['file_path'].$row['file_name'];
 
-			if($this->linkMethod == "link" && $row['instructions']) {
-				/* url fix */
-				if(substr($row['instructions'], 0, 1) != "/") {
-					$row['instructions'] = 'http://'.$row['instructions'];
+			if(($this->oConfig->linkMethod == "link" || $this->oConfig->linkMethod == "detailView") && $row['instructions']) {
+				$instructions = explode(";",$row['instructions']);
+				if(!empty($instructions[1])) {
+					$target = $instructions[1];
+				} else {
+					$target = "_blank";
 				}
-				$imgs .= '<a href="'.$row['instructions'].'" rel="image" target="_blank">';
+				/* url fix */
+				if((substr($instructions[0], 0, 1) != "/") && (substr($instructions[0], 0, 1) != "i")) {
+					$instructions[0] = 'http://'.$instructions[0];
+				}
+				$imgs .= '<a href="'.$instructions[0].'" rel="image" target="'.$target.'">';
 			} else {
 				$imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
 			}
-			$imgs .= '<img src="'.$path.'" alt="'.$row['description'].'" title="'.$row['title'].'" />';
+			$imgs .= '<img src="'.$path.'" alt="'.strtr(htmlspecialchars($row['description']), array("\r\n" => '<br />', "\r" => '<br />', "\n" => '<br />')).'" title="'.strtr(htmlspecialchars($row['title']), array("\r\n" => '<br />', "\r" => '<br />', "\n" => '<br />')).'" />';
 			$imgs .= '</a>';
 		}
 		return($imgs);
@@ -676,6 +555,30 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
 		// flush the last token
 		array_push($tokens, $currToken);
 		return $tokens;
+	}
+
+	function prepareLinkMethod(){
+
+		if($this->oConfig->linkMethod == "link" || $this->oConfig->linkMethod == "detailView") {
+			if($this->oConfig->autoSetup) {
+				$this->template["linkMethod"]=$this->cObj->getSubpart($this->templatePrepareLinkMethod,'###LINKMETHOD_LINK_AUTOSETUP###');
+			} else {
+				$this->template["linkMethod"]=$this->cObj->getSubpart($this->templatePrepareLinkMethod,'###LINKMETHOD_LINK###');
+			}
+		} elseif($this->oConfig->linkMethod == "remooz") {
+			if($this->oConfig->autoSetup) {
+				$this->template["linkMethod"]=$this->cObj->getSubpart($this->templatePrepareLinkMethod,'###LINKMETHOD_REMOOZ_AUTOSETUP###');
+			} else {
+				//$this->template["linkMethod"]=$this->cObj->getSubpart($this->templatePrepareLinkMethod,'###LINKMETHOD_REMOOZ###');
+				$remoozMarkerArray['###USEOVERLAY###'] = $this->oConfig->useOverlay;
+				$remoozMarkerArray['###OVERLAYCOLOR###'] = $this->oConfig->overlayColor;
+				$this->template["linkMethod"]=$this->cObj->substituteMarkerArrayCached($this->cObj->getSubpart($this->templatePrepareLinkMethod,'###LINKMETHOD_REMOOZ###'),$remoozMarkerArray);
+			}
+		}
+		 
+
+		return($this->template["linkMethod"]);
+
 	}
 }
 

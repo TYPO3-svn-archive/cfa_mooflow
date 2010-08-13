@@ -1,0 +1,26 @@
+plugin.tx_cfamooflow_pi1 {   
+   #templatePrepareLinkMethod = EXT:cfa_mooflow/templates/prepareLinkMethod.tmpl
+   #templateStartJS = EXT:cfa_mooflow/templates/startJS.tmpl
+   damcat.sorting.field = sorting
+   mootoolslib.core.enable = {$enableMootoolsCore}
+   mootoolslib.more.enable = {$enableMootoolsMore}
+}
+
+dynamicContentObject = PAGE
+dynamicContentObject {
+  typeNum = 1337
+}
+
+dynamicContentObject.10 = CONTENT
+dynamicContentObject.10 < styles.content.get
+
+dynamicContentObject.config {
+   #entfernt diverse header angaben
+   disableAllHeaderCode = 1 
+
+   #standard doctype deaktivieren
+   disableCharsetHeader = 1
+
+   #entfern die HTML Kommentare
+   disablePrefixComment = 1
+}

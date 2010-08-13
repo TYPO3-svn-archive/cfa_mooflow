@@ -1,0 +1,4 @@
+# cat=plugin-cfa_mooflow/enable/a; type=options[No=0,Yes=1]; label=Switch on Mootools core library?:Enable or Disable Mootools library
+enableMootoolsCore = 1
+# cat=plugin-cfa_mooflow/enable/b; type=options[No=0,Yes=1]; label=Switch on Mootools more library?:Enable or Disable Mootools library
+enableMootoolsMore = 1
