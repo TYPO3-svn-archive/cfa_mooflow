@@ -27,4 +27,4 @@ a:15:{s:14:"'onClickView':";s:1289:"
             this.getParent().addClass('activeCatMarker');
             return false;
           });
-          }";s:11:"reflection:";s:4:"0.40";s:12:"heightRatio:";s:4:"0.60";s:8:"offsetY:";s:1:"0";s:11:"startIndex:";s:1:"1";s:9:"interval:";s:4:"3000";s:7:"factor:";s:3:"115";s:8:"bgColor:";s:13:"'transparent'";s:11:"useCaption:";s:1:"1";s:10:"useResize:";s:1:"1";s:10:"useSlider:";s:1:"1";s:16:"useWindowResize:";s:1:"1";s:14:"useMouseWheel:";s:1:"1";s:12:"useKeyInput:";s:1:"1";s:10:"useViewer:";s:1:"1";}
+          }";s:11:"reflection:";s:3:"0.4";s:12:"heightRatio:";s:3:"0.5";s:8:"offsetY:";s:3:"-80";s:11:"startIndex:";s:1:"2";s:9:"interval:";s:4:"2000";s:7:"factor:";s:3:"115";s:8:"bgColor:";s:9:"'#FEFFDF'";s:11:"useCaption:";s:1:"1";s:10:"useResize:";s:1:"1";s:10:"useSlider:";s:5:"false";s:16:"useWindowResize:";s:5:"false";s:14:"useMouseWheel:";s:1:"1";s:12:"useKeyInput:";s:1:"1";s:10:"useViewer:";s:5:"false";}

@@ -1,3 +1,7 @@
+0.3.9
+  * Fix including mootools framework
+0.3.8
+  * In use of dam can be used now html special chars in the title and description field
 0.3.7
   * Pictures of Dam Category can be display sorted by tx_dam field
 0.3.6

@@ -52,20 +52,20 @@ var MooFlow = new Class({
             return false;
           });
           },
-reflection:0.40,
-heightRatio:0.60,
-offsetY:0,
-startIndex:1,
-interval:3000,
+reflection:0.4,
+heightRatio:0.5,
+offsetY:-80,
+startIndex:2,
+interval:2000,
 factor:115,
-bgColor:'transparent',
+bgColor:'#FEFFDF',
 useCaption:1,
 useResize:1,
-useSlider:1,
-useWindowResize:1,
+useSlider:false,
+useWindowResize:false,
 useMouseWheel:1,
 useKeyInput:1,
-useViewer:1
+useViewer:false
 	},
 	
 	initialize: function(element, options){

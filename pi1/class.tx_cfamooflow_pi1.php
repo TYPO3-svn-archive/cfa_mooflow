@@ -174,8 +174,8 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                           /* ]]> */
                           </script>';
 		
-		#$GLOBALS['TSFE']->additionalHeaderData['mooflowCoreJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'mootools-1.2.3-core.js"></script>';
-		#$GLOBALS['TSFE']->additionalHeaderData['mooflowMoreJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'mootools-1.2.3.1-more.js"></script>';
+		$GLOBALS['TSFE']->additionalHeaderData['mooflowCoreJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'mootools-1.2.3-core.js"></script>';
+		$GLOBALS['TSFE']->additionalHeaderData['mooflowMoreJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'mootools-1.2.3.1-more.js"></script>';
 		if(($this->clickOption == "single") && (empty($this->conf['autoSetup'])))  {
 			$GLOBALS['TSFE']->additionalHeaderData['mooflowJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'MooFlow.Mod.js"></script>';
 		} elseif (!empty($this->conf['autoSetup'])) {
@@ -654,7 +654,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
       } else {
       	$imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
       }
-      $imgs .= '<img src="'.$path.'" alt="'.$row['description'].'" title="'.$row['title'].'" />';
+      $imgs .= '<img src="'.$path.'" alt="'.strtr(htmlspecialchars($row['description']), array("\r\n" => '<br />', "\r" => '<br />', "\n" => '<br />')).'" title="'.strtr(htmlspecialchars($row['title']), array("\r\n" => '<br />', "\r" => '<br />', "\n" => '<br />')).'" />';
       $imgs .= '</a>';
     } 
     return($imgs);
@@ -673,7 +673,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
         $fields = 'tx_dam.uid,tx_dam.title,tx_dam.description,tx_dam.file_name,tx_dam.file_path,tx_dam.instructions';
         $tables = 'tx_dam,tx_dam_mm_cat';
         $temp_where = 'tx_dam.deleted = 0 AND tx_dam.file_mime_type=\'image\' AND tx_dam.hidden=0 AND tx_dam_mm_cat.uid_foreign='.$cat.' AND tx_dam_mm_cat.uid_local=tx_dam.uid';
-        $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $tables, $temp_where, '', $this->damcatOrderBy);
+        $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $tables, $temp_where, '', 'tx_dam.' . $this->damcatOrderBy);
              
         while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)){
         //t3lib_div::debug($row['uid'],"rowuid");
@@ -717,7 +717,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
       } else {
        	$imgs .= '<a href="'.$path.'" rel="image" target="_blank">';
       }
-      $imgs .= '<img src="'.$path.'" alt="'.$row['description'].'" title="'.$row['title'].'" />';
+      $imgs .= '<img src="'.$path.'" alt="'.strtr(htmlspecialchars($row['description']), array("\r\n" => '<br />', "\r" => '<br />', "\n" => '<br />')).'" title="'.strtr(htmlspecialchars($row['title']), array("\r\n" => '<br />', "\r" => '<br />', "\n" => '<br />')).'" />';
       $imgs .= '</a>';
     }			
     return($imgs);
