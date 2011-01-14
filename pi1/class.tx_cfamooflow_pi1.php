@@ -174,7 +174,7 @@ class tx_cfamooflow_pi1 extends tslib_pibase {
                           /* ]]> */
                           </script>';
 		
-		$GLOBALS['TSFE']->additionalHeaderData['mooflowCoreJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'mootools-1.2.3-core.js"></script>';
+		$GLOBALS['TSFE']->additionalHeaderData['mooflowCoreJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'mootools-1.2.5-core.js"></script>';
 		$GLOBALS['TSFE']->additionalHeaderData['mooflowMoreJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'mootools-1.2.3.1-more.js"></script>';
 		if(($this->clickOption == "single") && (empty($this->conf['autoSetup'])))  {
 			$GLOBALS['TSFE']->additionalHeaderData['mooflowJS'] = '<script language="JavaScript" type="text/javascript" src="'.$this->webPath.'MooFlow.Mod.js"></script>';
